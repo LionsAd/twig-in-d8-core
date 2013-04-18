@@ -2473,15 +2473,18 @@ function theme_html_tag($variables) {
 }
 
 /**
- * Returns HTML for a "more" link, like those used in blocks.
+ * Prepares variables for more link templates.
  *
- * @param $variables
+ * Default template: more-link.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - url: The URL of the main page.
  *   - title: A descriptive verb for the link, like 'Read more'.
  */
-function theme_more_link($variables) {
-  return '<div class="more-link">' . l(t('More'), $variables['url'], array('attributes' => array('title' => $variables['title']))) . '</div>';
+function template_preprocess_more_link(&$variables) {
+  $variables['url'] = base_path() . $variables['url'];
+  $variables['attributes'] = new Attribute($variables['attributes']);
 }
 
 /**
@@ -3199,7 +3202,8 @@ function drupal_common_theme() {
       'variables' => array('url' => NULL, 'title' => NULL),
     ),
     'more_link' => array(
-      'variables' => array('url' => NULL, 'title' => NULL)
+      'variables' => array('url' => NULL, 'title' => NULL),
+      'template' => 'more-link',
     ),
     'progress_bar' => array(
       'variables' => array('percent' => NULL, 'message' => NULL),
