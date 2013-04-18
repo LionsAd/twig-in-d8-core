@@ -1,0 +1,20 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a link.
+ *
+ * Available variables:
+ * - text: The translated link text for the anchor tag.
+ * - url: The sanitized url for this link.
+ * - url_is_active: TRUE if the url for this link leads to the current page.
+ * - attributes: Remaining html attributes for the containing element.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_link()
+ *
+ * @ingroup themeable
+ */
+#}
+{% spaceless %}
+  <a href="{{ url }}"{{ attributes }}>{{ text }}</a>
+{% endspaceless %}
