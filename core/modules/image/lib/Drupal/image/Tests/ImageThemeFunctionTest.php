@@ -56,9 +56,10 @@ class ImageThemeFunctionTest extends WebTestBase {
         'path' => $path,
       ),
     );
-    $rendered_element = render($element);
-    $expected_result = '<a href="' . base_path() . $path . '"><img class="image-style-test" src="' . $url . '" alt="" /></a>';
-    $this->assertEqual($expected_result, $rendered_element, 'theme_image_formatter() correctly renders without title, alt, or path options.');
+
+    $this->drupalSetContent(render($element));
+    $elements = $this->xpath('//a[@href=:path]/img[@class="image-style-test" and @src=:url and @alt=""]', array(':path' => base_path() . $path, ':url' => $url));
+    $this->assertEqual(count($elements), 1, 'theme_image_formatter() correctly renders without title, alt, or path options.');
 
     // Link the image to a fragment on the page, and not a full URL.
     $fragment = $this->randomName();
@@ -67,9 +68,10 @@ class ImageThemeFunctionTest extends WebTestBase {
       'external' => TRUE,
       'fragment' => $fragment,
     );
-    $rendered_element = render($element);
-    $expected_result = '<a href="#' . $fragment . '"><img class="image-style-test" src="' . $url . '" alt="" /></a>';
-    $this->assertEqual($expected_result, $rendered_element, 'theme_image_formatter() correctly renders a link fragment.');
+
+    $this->drupalSetContent(render($element));
+    $elements = $this->xpath('//a[@href=:fragment]/img[@class="image-style-test" and @src=:url and @alt=""]', array(':fragment' => '#' . $fragment, ':url' => $url));
+    $this->assertEqual(count($elements), 1, 'theme_image_formatter() correctly renders a link fragment.');
   }
 
   /**
@@ -92,9 +94,10 @@ class ImageThemeFunctionTest extends WebTestBase {
       '#style_name' => 'image_test',
       '#uri' => $original_uri,
     );
-    $rendered_element = render($element);
-    $expected_result = '<img class="image-style-image-test" src="' . $url . '" alt="" />';
-    $this->assertEqual($expected_result, $rendered_element, 'theme_image_style() renders an image correctly.');
+
+    $this->drupalSetContent(render($element));
+    $elements = $this->xpath('//img[@class="image-style-image-test" and @src=:url and @alt=""]', array(':url' => $url));
+    $this->assertEqual(count($elements), 1, 'theme_image_style() renders an image correctly.');
   }
 
 }

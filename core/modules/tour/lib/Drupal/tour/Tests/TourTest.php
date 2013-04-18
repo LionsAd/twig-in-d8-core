@@ -61,8 +61,9 @@ class TourTest extends WebTestBase {
     ));
     $this->assertNotEqual(count($elements), 1, 'Did not find Italian variant of tip 1.');
 
-    // Ensure that plugin's work.
-    $this->assertRaw('img src="http://local/image.png"', 'Image plugin tip found.');
+    // Ensure that plugins work.
+    $elements = $this->xpath('//img[@src="http://local/image.png"]');
+    $this->assertEqual(count($elements), 1, 'Image plugin tip found.');
 
     // Navigate to tour-test-2/subpath and verify the tour_test_2 tip is found.
     $this->drupalGet('tour-test-2/subpath');
