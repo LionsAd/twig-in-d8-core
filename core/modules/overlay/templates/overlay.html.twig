@@ -1,0 +1,34 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a page in the overlay.
+ *
+ * Available variables:
+ * - title: The (sanitized) title of the page.
+ * - page: The rendered page content.
+ * - tabs: Tabs linking to any sub-pages beneath the current page (e.g., the
+ *   view and edit tabs when displaying a node).
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_overlay()
+ *
+ * @ingroup themeable
+ */
+#}
+{{ disable_overlay }}
+<div id="overlay"{{ attributes }}>
+  <div id="overlay-titlebar" class="clearfix">
+    <div id="overlay-title-wrapper" class="clearfix">
+      <h1 id="overlay-title"{{ title_attributes }}>{{ title }}</h1>
+    </div>
+    <div id="overlay-close-wrapper">
+      <a id="overlay-close" href="#" class="overlay-close"><span class="element-invisible">{{ 'Close overlay'|t }}</span></a>
+    </div>
+    {% if tabs %}
+      <h2 class="element-invisible">{{ 'Primary tabs'|t }}</h2><ul id="overlay-tabs">{{ render_var(tabs) }}</ul>
+    {% endif %}
+  </div>
+  <div id="overlay-content"{{ content_attributes }}>
+    {{ page }}
+  </div>
+</div>
