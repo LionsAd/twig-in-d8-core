@@ -6,6 +6,7 @@
  */
 
 use Drupal\block\Plugin\Core\Entity\Block;
+use Drupal\Core\Template\Attribute;
 
 /**
  * Page callback: Attaches CSS for the block region demo.
@@ -111,15 +112,19 @@ function block_admin_block_delete_submit($form, &$form_state) {
 }
 
 /**
- * Processes variables for block-admin-display-form.tpl.php.
+ * Prepares variables for block admin display form templates.
  *
- * The $variables array contains the following arguments:
- * - $form
+ * Default template: block-admin-display-form.html.twig.
  *
- * @see block-admin-display.tpl.php
- * @see theme_block_admin_display()
+ * @param array $variables
+ *   An associative array containing:
+ *   - form: A render element representing the form.
  */
 function template_preprocess_block_admin_display_form(&$variables) {
+  $header = array(t('Block'), t('Region'), t('Weight'), t('Operations'));
+  // @todo Remove/refactor pending http://drupal.org/node/1920886.
+  $children = $variables['form'];
+
   $variables['block_regions'] = $variables['form']['block_regions']['#value'];
   if (isset($variables['block_regions'][BLOCK_REGION_NONE])) {
     $variables['block_regions'][BLOCK_REGION_NONE] = t('Disabled');
@@ -127,11 +132,11 @@ function template_preprocess_block_admin_display_form(&$variables) {
 
   foreach ($variables['block_regions'] as $key => $value) {
     // Initialize an empty array for the region.
-    $variables['block_listing'][$key] = array();
+    $block_listing[$key] = array();
   }
 
   // Initialize disabled blocks array.
-  $variables['block_listing'][BLOCK_REGION_NONE] = array();
+  $block_listing[BLOCK_REGION_NONE] = array();
 
   // Add each block in the form to the appropriate place in the block listing.
   foreach (element_children($variables['form']['blocks']) as $i) {
@@ -144,15 +149,61 @@ function template_preprocess_block_admin_display_form(&$variables) {
     $block['region']['#attributes']['class'] = array('block-region-select', 'block-region-' . $region);
     $block['weight']['#attributes']['class'] = array('block-weight', 'block-weight-' . $region);
 
-    $variables['block_listing'][$region][$i] = new stdClass();
-    $variables['block_listing'][$region][$i]->row_class = !empty($block['#attributes']['class']) ? implode(' ', $block['#attributes']['class']) : '';
-    $variables['block_listing'][$region][$i]->block_modified = !empty($block['#attributes']['class']) && in_array('block-modified', $block['#attributes']['class']);
-    $variables['block_listing'][$region][$i]->block_title = drupal_render($block['info']);
-    $variables['block_listing'][$region][$i]->region_select = drupal_render($block['region']) . drupal_render($block['theme']);
-    $variables['block_listing'][$region][$i]->weight_select = drupal_render($block['weight']);
-    $variables['block_listing'][$region][$i]->operations = drupal_render($block['operations']);
-    $variables['block_listing'][$region][$i]->printed = FALSE;
+    $block_listing[$region][$i] = new stdClass();
+    $block_listing[$region][$i]->row_class = !empty($block['#attributes']['class']) ? implode(' ', $block['#attributes']['class']) : '';
+    $block_listing[$region][$i]->block_modified = !empty($block['#attributes']['class']) && in_array('block-modified', $block['#attributes']['class']);
+    $block_listing[$region][$i]->block_title = $block['info'];
+    $block_listing[$region][$i]->region_select = array(
+      'region' => array(
+        'data' => $block['region'],
+        '#weight' => 1,
+      ),
+      'theme' => array(
+        'data' => $block['theme'],
+        '#weight' => 2,
+      ),
+    );
+    $block_listing[$region][$i]->weight_select = $block['weight'];
+    $block_listing[$region][$i]->operations = $block['operations'];
+    $block_listing[$region][$i]->printed = FALSE;
   }
 
-  $variables['form_submit'] = drupal_render_children($variables['form']);
+  $rows = array();
+  foreach ($block_listing as $region => $block_list) {
+    $rows[] = array(
+      'data' => array(
+        array('data' => t($variables['block_regions'][$region]), 'colspan' => 4),
+      ),
+      'class' => array('region-title region-title-' . $region)
+    );
+    $rows[] = array(
+      'data' => array(
+        array('data' => '<em>'. t('No blocks in this region ') . '</em>', 'colspan' => 4),
+      ),
+      'class' => array('region-message', 'region-' . $region . '-message', empty($block_listing[$region]) ? 'region-empty' : 'region-populated')
+    );
+    foreach ($block_list as $key => $block) {
+      $rows[] = array(
+        'data' => array(
+          array('data' => $block->block_title),
+          array('data' => $block->region_select),
+          array('data' => $block->weight_select),
+          array('data' => $block->operations),
+        ),
+        'class' => array('draggable'),
+      );
+    }
+  }
+  $attributes = new Attribute(array('id' => 'blocks', 'class' => array()));
+  drupal_add_tabledrag('blocks', 'order', 'sibling', 'block-weight');
+  $variables['table'] = array(
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
+    '#attributes' => $attributes,
+  );
+  // Remove elements from the 'children' render array.
+  // @todo Refactor when http://drupal.org/node/1920886 is resolved.
+  unset($children['blocks'], $children['block_regions']);
+  $variables['children'] = drupal_render_children($children);
 }
