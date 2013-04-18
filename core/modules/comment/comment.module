@@ -197,16 +197,15 @@ function comment_field_extra_fields() {
 function comment_theme() {
   return array(
     'comment_block' => array(
+      'template' => 'comment-block',
       'variables' => array('number' => NULL),
-    ),
-    'comment_preview' => array(
-      'variables' => array('comment' => NULL),
     ),
     'comment' => array(
       'template' => 'comment',
       'render element' => 'elements',
     ),
     'comment_post_forbidden' => array(
+      'template' => 'comment-post-forbidden',
       'variables' => array('node' => NULL),
     ),
     'comment_wrapper' => array(
@@ -551,26 +550,6 @@ function comment_new_page_count($num_comments, $new_replies, EntityInterface $no
   }
 
   return $pagenum;
-}
-
-/**
- * Returns HTML for a list of recent comments.
- *
- * @ingroup themeable
- */
-function theme_comment_block($variables) {
-  $items = array();
-  $number = $variables['number'];
-  foreach (comment_get_recent($number) as $comment) {
-    $items[] = l($comment->subject, 'comment/' . $comment->cid, array('fragment' => 'comment-' . $comment->cid)) . '&nbsp;<span>' . t('@time ago', array('@time' => format_interval(REQUEST_TIME - $comment->changed))) . '</span>';
-  }
-
-  if ($items) {
-    return theme('item_list', array('items' => $items));
-  }
-  else {
-    return t('No comments available.');
-  }
 }
 
 /**
@@ -1583,9 +1562,35 @@ function comment_prepare_author(Comment $comment) {
 }
 
 /**
- * Preprocesses variables for comment.tpl.php.
+ * Prepares variables for comment block templates.
  *
- * @see comment.tpl.php
+ * Default template: comment-block.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - number: The number of recent comments to display.
+ */
+function template_preprocess_comment_block(&$variables) {
+  $items = array();
+  foreach (comment_get_recent($variables['number']) as $comment) {
+    $items[] = l($comment->subject, 'comment/' . $comment->cid, array('fragment' => 'comment-' . $comment->cid)) . '&nbsp;<span>' . t('@time ago', array('@time' => format_interval(REQUEST_TIME - $comment->changed))) . '</span>';
+  }
+
+  $variables['comments'] = array(
+    '#theme' => 'item_list',
+    '#items' => $items,
+  );
+}
+
+/**
+ * Prepares variables for comment templates.
+ *
+ * Default template: comment.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An associative array containing the comment and node objects.
+ *     Array keys: #comment, #node.
  */
 function template_preprocess_comment(&$variables) {
   $comment = $variables['elements']['#comment'];
@@ -1605,14 +1610,13 @@ function template_preprocess_comment(&$variables) {
     $variables['changed'] = format_date($comment->changed->value);
   }
 
+  $variables['user_picture'] = array();
   if (theme_get_setting('toggle_comment_user_picture')) {
     // To change user picture settings (e.g., image style), edit the 'compact'
     // view mode on the User entity.
     $variables['user_picture'] = user_view($account, 'compact');
   }
-  else {
-    $variables['user_picture'] = array();
-  }
+
   if (config('user.settings')->get('signatures') && !empty($account->signature)) {
     $variables['signature'] = check_markup($account->signature, $account->signature_format, '', TRUE) ;
   }
@@ -1696,63 +1700,67 @@ function template_preprocess_comment(&$variables) {
 }
 
 /**
- * Returns HTML for a "you can't post comments" notice.
+ * Prepares variables for comment forbidden notice templates.
  *
- * @param $variables
+ * Default template: comment-post-forbidden.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - node: The comment node.
- *
- * @ingroup themeable
  */
-function theme_comment_post_forbidden($variables) {
-  $node = $variables['node'];
+function template_preprocess_comment_post_forbidden(&$variables) {
   global $user;
+  $node = $variables['node'];
 
+  // Whether the user viewing the site is logged out.
+  $variables['logged_out'] = (bool) (!$user->uid);
+
+  // Whether the user will be able to post comments once logged in.
   // Since this is expensive to compute, we cache it so that a page with many
   // comments only has to query the database once for all the links.
-  $authenticated_post_comments = &drupal_static(__FUNCTION__, NULL);
-
-  if (!$user->uid) {
-    if (!isset($authenticated_post_comments)) {
-      // We only output a link if we are certain that users will get permission
-      // to post comments by logging in.
-      $comment_roles = user_roles(TRUE, 'post comments');
-      $authenticated_post_comments = isset($comment_roles[DRUPAL_AUTHENTICATED_RID]);
-    }
-
-    if ($authenticated_post_comments) {
-      // We cannot use drupal_get_destination() because these links
-      // sometimes appear on /node and taxonomy listing pages.
-      if (variable_get('comment_form_location_' . $node->type, COMMENT_FORM_BELOW) == COMMENT_FORM_SEPARATE_PAGE) {
-        $destination = array('destination' => "comment/reply/$node->nid#comment-form");
-      }
-      else {
-        $destination = array('destination' => "node/$node->nid#comment-form");
-      }
-
-      if (config('user.settings')->get('register') != USER_REGISTER_ADMINISTRATORS_ONLY) {
-        // Users can register themselves.
-        return t('<a href="@login">Log in</a> or <a href="@register">register</a> to post comments', array('@login' => url('user/login', array('query' => $destination)), '@register' => url('user/register', array('query' => $destination))));
-      }
-      else {
-        // Only admins can add new users, no public registration.
-        return t('<a href="@login">Log in</a> to post comments', array('@login' => url('user/login', array('query' => $destination))));
-      }
-    }
+  $variables['can_post_comments'] = &drupal_static(__FUNCTION__, NULL);
+  if (!isset($variables['can_post_comments'])) {
+    $comment_roles = user_roles(TRUE, 'post comments');
+    $variables['can_post_comments'] = isset($comment_roles[DRUPAL_AUTHENTICATED_RID]);
   }
+
+  // Whether a user is allowed to register for the site.
+  $variables['user_register'] = (config('user.settings')->get('register') != USER_REGISTER_ADMINISTRATORS_ONLY);
+
+  // Build login and register links.
+  // We cannot use drupal_get_destination() because these links
+  // sometimes appear on /node and taxonomy listing pages.
+  if (variable_get('comment_form_location_' . $node->type, COMMENT_FORM_BELOW) == COMMENT_FORM_SEPARATE_PAGE) {
+    $destination = array('destination' => "comment/reply/$node->nid#comment-form");
+  }
+  else {
+    $destination = array('destination' => "node/$node->nid#comment-form");
+  }
+  // The URL where a user may log in.
+  $variables['user_login_url'] = url('user/login', array('query' => $destination));
+
+  // The URL where a user may register.
+  $variables['user_register_url'] = url('user/register', array('query' => $destination));
 }
 
 /**
- * Preprocesses variables for comment-wrapper.tpl.php.
+ * Prepares variables for comment wrapper templates.
  *
- * @see comment-wrapper.tpl.php
+ * Default template: comment-wrapper.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - content: An associative array containing render arrays for the list of
+ *     comments, and the comment form. Array keys: comments, comment_form.
  */
 function template_preprocess_comment_wrapper(&$variables) {
   // Provide contextual information.
   $variables['node'] = $variables['content']['#node'];
   $variables['display_mode'] = variable_get('comment_default_mode_' . $variables['node']->type, COMMENT_MODE_THREADED);
-  // The comment form is optional and may not exist.
-  $variables['content'] += array('comment_form' => array());
+
+  // Create separate variables for the comments and comment form.
+  $variables['comments'] = $variables['content']['comments'];
+  $variables['form'] = $variables['content']['comment_form'];
 }
 
 /**

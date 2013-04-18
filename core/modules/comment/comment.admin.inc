@@ -39,7 +39,6 @@ function comment_admin($type = 'new') {
  * @see comment_admin()
  * @see comment_admin_overview_validate()
  * @see comment_admin_overview_submit()
- * @see theme_comment_admin_overview()
  */
 function comment_admin_overview($form, &$form_state, $arg) {
   // Build an 'Update options' form.

@@ -1,0 +1,19 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a list of recent comments.
+ *
+ * Available variables:
+ * - comments: A list of recent comments.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_comment_block()
+ *
+ * @ingroup themeable
+ */
+#}
+{{ comments }}
+
+{% if not comments %}
+  {{ 'No comments available.'|t }}
+{% endif %}
