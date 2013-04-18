@@ -2555,26 +2555,6 @@ function template_preprocess_more_link(&$variables) {
 }
 
 /**
- * Returns HTML for a progress bar.
- *
- * Note that the core Batch API uses this only for non-JavaScript batch jobs.
- *
- * @param $variables
- *   An associative array containing:
- *   - percent: The percentage of the progress.
- *   - message: A string containing information to be displayed.
- */
-function theme_progress_bar($variables) {
-  $output = '<div id="progress" class="progress">';
-  $output .= '<div class="bar"><div class="filled" style="width: ' . $variables['percent'] . '%"></div></div>';
-  $output .= '<div class="percentage">' . $variables['percent'] . '%</div>';
-  $output .= '<div class="message">' . $variables['message'] . '</div>';
-  $output .= '</div>';
-
-  return $output;
-}
-
-/**
  * Prepares variables for meter templates.
  *
  * Default template: meter.html.twig.
@@ -3259,6 +3239,7 @@ function drupal_common_theme() {
     ),
     'progress_bar' => array(
       'variables' => array('percent' => NULL, 'message' => NULL),
+      'template' => 'progress-bar',
     ),
     'indentation' => array(
       'variables' => array('size' => 1),
