@@ -1,0 +1,97 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a table.
+ *
+ * Available variables:
+ * - attributes: HTML attributes to apply to the <table> tag.
+ * - caption: A localized string for the <caption> tag.
+ * - colgroups: Column groups. Each group contains the following properties:
+ *   - attributes: HTML attributes to apply to the <col> tag.
+ *     Note: Drupal currently supports only one table header row, see
+ *     http://drupal.org/node/893530 and
+ *     http://api.drupal.org/api/drupal/includes!theme.inc/function/theme_table/7#comment-5109.
+ * - header: Table header cells. Each cell contains the following properties:
+ *   - attributes: HTML attributes to apply to the <th> tag.
+ *   - data: A localized string for the title of the column.
+ *   - field: Field name (required for column sorting).
+ *   - sort: Default sort order for this column ("asc" or "desc").
+ * - sticky: A flag indicating whether to use a "sticky" table header.
+ * - rows: Table rows. Each row contains the following properties:
+ *   - attributes: HTML attributes to apply to the <tr> tag.
+ *   - data: Table cells.
+ *   - no_striping: A flag indicating that the row should receive no
+ *     'even / odd' styling. Defaults to FALSE.
+ *     @todo Deprecate no_striping?
+ *     A cell can be either a string or may contain the following keys:
+ *     - data: The string to display in the table cell.
+ *     - header: Indicates this cell is a header.
+ *     - attributes: Any HTML attributes, such as "colspan", to apply to the
+ *       table cell.
+ * - empty_message: The message to display in an extra row if table does not
+ *   have any rows.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_table()
+ *
+ * @ingroup themeable
+ */
+#}
+<table{{ attributes }}>
+  {# Caption #}
+  {% if caption %}
+    <caption>{{ caption }}</caption>
+  {% endif %}
+
+  {# Columns #}
+  {% if colgroups %}
+    {% for colgroup in colgroups %}
+      {% if colgroup.cols %}
+        <colgroup{{ colgroup.attributes }}>
+        {% for col in colgroup.cols %}
+          {#
+            Use temporary variable for column attributes.  This somehow works
+            around the issue where columns after the first column do not receive
+            attributes.  Try using col.attributes directly, and you'll see.
+            Is this a Twig or an Attribute() issue?
+            @see http://drupal.org/node/1867090
+          #}
+          {% set col_attributes = col.attributes %}
+          <col{{ col_attributes }} />
+        {% endfor %}
+         </colgroup>
+       {% else %}
+         <colgroup{{ colgroup.attributes }} />
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {# Header #}
+  {% if header %}
+    <thead>
+      <tr>
+        {% for i in header|keys -%}
+          <th{{ header[i].attributes }}>
+              {{- header[i].data -}}
+          </th>
+        {%- endfor %}
+      </tr>
+    </thead>
+  {% endif %}
+
+  {# Rows #}
+  {% if rows %}
+    <tbody>
+      {% for row in rows %}
+        <tr{{ row.attributes }}>
+          {% for i in row.cells|keys -%}
+            {%- set cell_tag = row.cells[i].header ? 'th' : 'td' -%}
+            <{{ cell_tag }}{{ row.cells[i].attributes }}>
+                {{- row.cells[i].data -}}
+            </{{ cell_tag }}>
+          {%- endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  {% endif %}
+</table>
