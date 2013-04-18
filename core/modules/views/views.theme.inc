@@ -40,14 +40,21 @@ function _views_theme_functions($hook, ViewExecutable $view, $display = NULL) {
 }
 
 /**
- * Preprocess the primary theme implementation for a view.
+ * Prepares variables for view templates.
+ *
+ * Default template: views-view.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: The view object.
+ *   - directory: The location of the views module.
  */
 function template_preprocess_views_view(&$vars) {
   global $base_path;
 
   $view = $vars['view'];
 
-  $vars['rows'] = (!empty($view->result) || $view->style_plugin->even_empty()) ? $view->style_plugin->render($view->result) : '';
+  $vars['rows'] = (!empty($view->result) || $view->style_plugin->even_empty()) ? $view->style_plugin->render($view->result) : array();
   // Force a render array so CSS/JS can be added.
   if (!is_array($vars['rows'])) {
     $vars['rows'] = array('#markup' => $vars['rows']);
@@ -72,10 +79,10 @@ function template_preprocess_views_view(&$vars) {
     $vars['attributes']['class'][] = $vars['css_class'];
   }
 
-  $empty = empty($view->result);
-  $vars['header'] = $view->display_handler->renderArea('header', $empty);
-  $vars['footer'] = $view->display_handler->renderArea('footer', $empty);
-  $vars['empty'] = $empty ? $view->display_handler->renderArea('empty', $empty) : FALSE;
+  $empty_message = empty($view->result);
+  $vars['header'] = $view->display_handler->renderArea('header', $empty_message);
+  $vars['footer'] = $view->display_handler->renderArea('footer', $empty_message);
+  $vars['empty_message'] = $empty_message ? $view->display_handler->renderArea('empty', $empty_message) : FALSE;
 
   $vars['exposed']    = !empty($view->exposed_widgets) ? $view->exposed_widgets : '';
   $vars['more']       = $view->display_handler->renderMoreLink();
@@ -110,7 +117,7 @@ function template_preprocess_views_view(&$vars) {
   // attached to an array (not an object) in order to process them. For our
   // purposes, it doesn't matter what we attach them to, since once they are
   // processed by contextual_preprocess() they will appear in the $title_suffix
-  // variable (which we will then render in views-view.tpl.php).
+  // variable (which we will then render in views-view.html.twig).
   views_add_contextual_links($vars['view_array'], 'view', $view, $view->current_display);
 
   // Attachments are always updated with the outer view, never by themselves,
@@ -158,7 +165,7 @@ function template_preprocess_views_view(&$vars) {
     // Copy the rows so as not to modify them by reference when rendering.
     $rows = $vars['rows'];
     $rows = drupal_render($rows);
-    $output = !empty($rows) ? $rows : $vars['empty'];
+    $output = !empty($rows) ? $rows : $vars['empty_message'];
     $form = drupal_get_form(views_form_id($view), $view, $output);
     // The form is requesting that all non-essential views elements be hidden,
     // usually because the rendered step is not a view result.
@@ -1104,7 +1111,7 @@ function theme_views_mini_pager($vars) {
  * or some combination thereof.
  *
  * For each view, there will be a minimum of two templates used. The first
- * is used for all views: views-view.tpl.php.
+ * is used for all views: views-view.html.twig.
  *
  * The second template is determined by the style selected for the view. Note
  * that certain aspects of the view can also change which style is used; for
@@ -1124,7 +1131,7 @@ function theme_views_mini_pager($vars) {
  * - views-view--foobar--page.tpl.php
  * - views-view--page.tpl.php
  * - views-view--foobar.tpl.php
- * - views-view.tpl.php
+ * - views-view.html.twig
  *
  * - views-view-unformatted--foobar--page.tpl.php
  * - views-view-unformatted--page.tpl.php
