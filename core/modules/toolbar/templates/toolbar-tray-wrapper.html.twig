@@ -1,0 +1,27 @@
+{#
+/**
+ * Default theme implementation for a toolbar tray wrapper.
+ *
+ * Available variables:
+ * - label: The toolbar tray heading label.
+ * - children: The content of the toolbar tray.
+ * - attributes: HTML attributes to apply to the wrapper.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_toolbar_tray_wrapper()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if children %}
+  {% spaceless %}
+  <div{{ attributes }}>
+    <div class="lining clearfix">
+      {% if label %}
+        <h3 class="element-invisible">{{ label }}</h3>
+      {% endif %}
+      {{ children }}
+    </div>
+  </div>
+  {% endspaceless %}
+{% endif %}

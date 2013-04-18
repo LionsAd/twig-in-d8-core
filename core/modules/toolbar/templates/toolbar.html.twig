@@ -1,0 +1,26 @@
+{#
+/**
+ * Default theme implementation for the administrative toolbar.
+ *
+ * Available variables:
+ * - wrapper_attributes: HTML attributes for the wrapper.
+ * - toolbar_attributes: HTML attributes to apply to the toolbar.
+ * - toolbar_heading: The heading or label for the toolbar.
+ * - children: Tabs for the toolbar.
+ * - trays: Toolbar trays, each associated with a tab.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_toolbar()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if children %}
+  <nav{{ wrapper_attributes }}>
+    <div{{ toolbar_attributes }}>
+      <h2 class="element-invisible">{{ toolbar_heading }}</h2>
+      {{ children }}
+    </div>
+    {{ trays }}
+  </nav>
+{% endif %}
