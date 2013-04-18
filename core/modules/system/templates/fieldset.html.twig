@@ -1,0 +1,36 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a fieldset element and its children.
+ *
+ * Available variables:
+ * - attributes: A list of HTML attributes for the fieldset element.
+ * - title: Title of the fieldset, intended for use as the text of the legend.
+ * - title_attributes: A list of HTML attributes to apply to the legend.
+ * - description: The description of the fieldset.
+ * - description_attributes: A list of HTML attributes to apply to the
+ *   description container.
+ * - children: The rendered child elements of the fieldset.
+ * - value: The value of the fieldset.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_fieldset()
+ *
+ * @ingroup themeable
+ */
+#}
+<fieldset{{ attributes }}>
+  {% if title is defined %}
+    {# Always wrap fieldset legends in a SPAN for CSS positioning. #}
+    <legend{{ title_attributes }}><span class="fieldset-legend">{{ title }}</span></legend>
+  {% endif %}
+  <div class="fieldset-wrapper">
+    {% if description is defined %}
+      <div{{ description_attributes }}>{{ description }}</div>
+    {% endif %}
+    {{ children }}
+    {% if value %}
+      {{ value }}
+    {% endif %}
+  </div>
+</fieldset>
