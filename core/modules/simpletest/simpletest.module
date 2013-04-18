@@ -83,10 +83,12 @@ function simpletest_theme() {
     'simpletest_test_table' => array(
       'render element' => 'table',
       'file' => 'simpletest.pages.inc',
+      'template' => 'simpletest-test-table',
     ),
     'simpletest_result_summary' => array(
       'render element' => 'form',
       'file' => 'simpletest.pages.inc',
+      'template' => 'simpletest-result-summary',
     ),
   );
 }

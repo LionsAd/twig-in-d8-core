@@ -1,0 +1,46 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the content of simpletest test table.
+ *
+ * Available variables:
+ * - table: A simpletest table.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_simpletest_test_table()
+ *
+ * @ingroup themeable
+ */
+#}
+<table id="simpletest-form-table">
+  <thead>
+      <tr>
+          <th class="select-all"></th>
+          <th class="simpletest_test">{{ 'Test'|t }}</th>
+          <th class="simpletest_description">{{ 'Description'|t }}</th>
+      </tr>
+  </thead>
+  <tbody>
+      {% for test_group in test_groups %}
+        <tr class="simpletest-group">
+          <td id="{{ test_group.test_class }}" class="simpletest-select-all"></td>
+          <td class="simpletest-group-label">
+            <div class="simpletest-image" id="simpletest-test-group-{{ test_group.test_class }}"></div>
+            <label for="{{ test_group.test_class }}-select-all" class="simpletest-group-label">{{ test_group.label }}</label>
+          </td>
+          <td class="simpletest-group-description">&nbsp;</td>
+        </tr>
+        {% for test in test_group.tests %}
+            <tr{{ test.attributes }}>
+              <td class="simpletest-test-select">{{ test.field }}</td>
+              <td class="simpletest-test-label"><label for="{{ test.id }}">{{ test.title }}</label></td>
+              <td class="simpletest-test-description"><div class="description">{{ test.description }}</div></td>
+            </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="3">{{ 'No tests to display.'|t }}</td>
+        </tr>
+      {% endfor %}
+  </tbody>
+</table>
