@@ -1,0 +1,38 @@
+{#
+/**
+ * @file
+ * Default theme implementation for an HTML element with RDF attributes.
+ *
+ * If the 'attributes' variable is present, the content is wrapped in a div or
+ * span tag with the additional RDF attributes. Otherwise, the content is left
+ * as is and no wrapping element is added.
+ *
+ * Available variables:
+ * - content: Content to be wrapped with attributes.
+ * - attributes: Attributes to be placed on the wrapping element.
+ * - context: Context information about the content to be wrapped:
+ *   - hook: The theme hook that will use the wrapped content.
+ *   - variable_name: The name of the variable by which the template will
+ *     refer to this content.
+ *   - variables: The full set of variables about to be passed to the
+ *     template.
+ * - inline: TRUE if the content contains only inline HTML elements and
+ *   therefore can be validly wrapped by a <span> tag. FALSE if the content
+ *   might contain block level HTML elements and therefore cannot be validly
+ *   wrapped by a <span> tag.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_rdf_template_variable_wrapper()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if attributes %}
+  {% if inline %}
+    <span{{ attributes }}>{{ content }}</span>
+  {% else %}
+    <div{{ attributes }}>{{ content }}</div>
+  {% endif %}
+{% else %}
+  {{ content }}
+{% endif %}
