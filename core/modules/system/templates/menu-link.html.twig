@@ -1,0 +1,22 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a menu link and submenu.
+ *
+ * Available variables:
+ * - wrapper_attributes: HTML attributes for the wrapper element.
+ * - link: An HTML link element.
+ * - sub_menu: Rendered list item children of the element.
+ *
+ * Note: This template renders the content for each individual menu item in
+ * menu-local-tasks.html.twig.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_menu_link()
+ *
+ * @ingroup themeable
+ */
+#}
+<li{{ wrapper_attributes }}>
+  {{ link }}{{ sub_menu }}
+</li>

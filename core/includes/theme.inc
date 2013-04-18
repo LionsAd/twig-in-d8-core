@@ -3248,18 +3248,23 @@ function drupal_common_theme() {
     // From menu.inc.
     'menu_link' => array(
       'render element' => 'element',
+      'template' => 'menu-link',
     ),
     'menu_tree' => array(
       'render element' => 'tree',
+      'template' => 'menu-tree',
     ),
     'menu_local_task' => array(
       'render element' => 'element',
+      'template' => 'menu-local-task',
     ),
     'menu_local_action' => array(
       'render element' => 'element',
+      'template' => 'menu-local-action',
     ),
     'menu_local_tasks' => array(
       'variables' => array('primary' => array(), 'secondary' => array()),
+      'template' => 'menu-local-tasks',
     ),
     // From form.inc.
     'input' => array(
