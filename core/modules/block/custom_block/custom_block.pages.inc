@@ -40,31 +40,24 @@ function custom_block_add_page() {
 }
 
 /**
- * Returns HTML for a list of available custom block types for block creation.
+ * Prepares variables for a custom block type creation list templates.
  *
- * @param $variables
+ * Default template: custom-block-add-list.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - content: An array of block types.
  *
  * @see custom_block_add_page()
- *
- * @ingroup themeable
  */
-function theme_custom_block_add_list($variables) {
-  $content = $variables['content'];
-  $output = '';
-
-  if ($content) {
-    $output = '<dl class="node-type-list">';
-    foreach ($content as $type) {
-      $output .= '<dt>' . l($type->label(), 'block/add/' . $type->id()) . '</dt>';
-      $output .= '<dd>' . filter_xss_admin($type->description) . '</dd>';
-    }
-    $output .= '</dl>';
+function template_preprocess_custom_block_add_list(&$variables) {
+  $variables['types'] = array();
+  foreach ($variables['content'] as $type) {
+    $variables['types'][$type->id] = array();
+    $variables['types'][$type->id]['link'] = l($type->label(), 'block/add/' . $type->id());
+    $variables['types'][$type->id]['description'] = filter_xss_admin($type->description);
   }
-  return $output;
 }
-
 
 /**
  * Page callback: Presents the custom block creation form.
