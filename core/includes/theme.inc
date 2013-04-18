@@ -2407,17 +2407,6 @@ function theme_item_list($variables) {
 }
 
 /**
- * Returns HTML for a "more help" link.
- *
- * @param $variables
- *   An associative array containing:
- *   - url: The URL for the link.
- */
-function theme_more_help_link($variables) {
-  return '<div class="more-help-link">' . l(t('More help'), $variables['url']) . '</div>';
-}
-
-/**
  * Returns HTML for a feed icon.
  *
  * @param $variables
@@ -3194,6 +3183,7 @@ function drupal_common_theme() {
     ),
     'more_help_link' => array(
       'variables' => array('url' => NULL),
+      'template' => 'more-help-link',
     ),
     'feed_icon' => array(
       'variables' => array('url' => NULL, 'title' => NULL),
