@@ -1,0 +1,20 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a pager link.
+ *
+ * Available variables:
+ * - text: The translated link text for the anchor tag.
+ * - attributes: Remaining HTML attributes for the anchor tag.
+ *   - attributes.href: The internal path or external URL being linked to, such
+ *     as "node/34" or "http://example.com/foo".
+ *   - attributes.class: One or more classes to be applied to the anchor tag.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_pager_link()
+ *
+ * @ingroup themeable
+ */
+ @todo Revisit this template after http://drupal.org/node/1595614 is resolved.
+#}
+<a href="{{ attributes.href }}" class="{{ attributes.class }}"{{ attributes }}>{{ text }}</a>
