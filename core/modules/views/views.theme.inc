@@ -393,13 +393,18 @@ function template_preprocess_views_view_summary(&$vars) {
 }
 
 /**
- * Template preprocess theme function to print summary basically
- * unformatted.
+ * Prepares variables for unformatted summary view templates.
+ *
+ * Default template: views-view-summary-unformatted.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: The view object.
  */
-function template_preprocess_views_view_summary_unformatted(&$vars) {
-  $view     = $vars['view'];
+function template_preprocess_views_view_summary_unformatted(&$variables) {
+  $view = $variables['view'];
   $argument = $view->argument[$view->build_info['summary_level']];
-  $vars['row_classes'] = array();
+  $variables['row_classes'] = array();
 
   $url_options = array();
 
@@ -409,24 +414,24 @@ function template_preprocess_views_view_summary_unformatted(&$vars) {
 
   $count = 0;
   $active_urls = drupal_map_assoc(array(
-    url(current_path(), array('alias' => TRUE)), // force system path
-    url(current_path()), // could be an alias
+    url(current_path(), array('alias' => TRUE)), // Force system path.
+    url(current_path()), // Could be an alias.
   ));
 
   // Collect all arguments foreach row, to be able to alter them for example by the validator.
   // This is not done per single argument value, because this could cause performance problems.
   $row_args = array();
-  foreach ($vars['rows'] as $id => $row) {
+  foreach ($variables['rows'] as $id => $row) {
     $row_args[$id] = $argument->summary_argument($row);
   }
   $argument->process_summary_arguments($row_args);
 
-  foreach ($vars['rows'] as $id => $row) {
-    // only false on first time:
+  foreach ($variables['rows'] as $id => $row) {
+    // Only false on first time.
     if ($count++) {
-      $vars['rows'][$id]->separator = filter_xss_admin($vars['options']['separator']);
+      $variables['rows'][$id]->separator = filter_xss_admin($variables['options']['separator']);
     }
-    $vars['rows'][$id]->link = $argument->summary_name($row);
+    $variables['rows'][$id]->link = $argument->summary_name($row);
     $args = $view->args;
     $args[$argument->position] = $row_args[$id];
 
@@ -434,13 +439,13 @@ function template_preprocess_views_view_summary_unformatted(&$vars) {
     if (!empty($argument->options['summary_options']['base_path'])) {
       $base_path = $argument->options['summary_options']['base_path'];
     }
-    $vars['rows'][$id]->url = url($view->getUrl($args, $base_path), $url_options);
-    $vars['rows'][$id]->count = intval($row->{$argument->count_alias});
-    $vars['row_classes'][$id] = array();
-    if (isset($active_urls[$vars['rows'][$id]->url])) {
-      $vars['row_classes'][$id]['class'][] = 'active';
+    $variables['rows'][$id]->url = url($view->getUrl($args, $base_path), $url_options);
+    $variables['rows'][$id]->count = intval($row->{$argument->count_alias});
+    $variables['row_classes'][$id] = array();
+    if (isset($active_urls[$variables['rows'][$id]->url])) {
+      $variables['row_classes'][$id]['class'][] = 'active';
     }
-    $vars['row_classes'][$id] = new Attribute($vars['row_classes'][$id]);
+    $variables['row_classes'][$id] = new Attribute($variables['row_classes'][$id]);
   }
 }
 
