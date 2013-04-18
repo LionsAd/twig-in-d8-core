@@ -1,0 +1,28 @@
+{#
+/**
+ * @file
+ * Overrides custom-block-add-list.html.twig.
+ *
+ * Displays the list of available custom block types for creation.
+ *
+ * Available variables:
+ * - types: A collection of all the available custom block types.
+ *   - type: The custom block type, containing all the items below.
+ *   - type.link: A link to add a block of this type.
+ *   - type.description: A description of this custom block type.
+ *   - type.label: The title of the custom block type.
+ *   - type.path: A path for the link to add a block of this type.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_custom_block_add_list()
+ *
+ * @ingroup themeable
+ */
+ #}
+<ul class="admin-list">
+  {% for type in types %}
+    <li class="clearfix">
+      <a href="{{ type.path }}"><span class="label">{{ type.label }}</span><div class="description">{{ type.description }}</div></a>
+    </li>
+  {% endfor %}
+</ul>

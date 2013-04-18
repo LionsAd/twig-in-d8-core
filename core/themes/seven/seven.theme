@@ -27,7 +27,7 @@ function seven_preprocess_html(&$vars) {
 }
 
 /**
- * Implements hook_preprocess_HOOK() for page.tpl.php.
+ * Implements hook_preprocess_HOOK() for page.html.twig.
  */
 function seven_preprocess_page(&$vars) {
   $vars['primary_local_tasks'] = $vars['tabs'];
@@ -39,93 +39,57 @@ function seven_preprocess_page(&$vars) {
 }
 
 /**
- * Displays the list of available node types for node creation.
+ * Implements hook_preprocess_HOOK() for node-add-list.html.twig.
  */
-function seven_node_add_list($variables) {
-  $content = $variables['content'];
-  $output = '';
-  if ($content) {
-    $output = '<ul class="admin-list">';
-    foreach ($content as $type) {
-      $output .= '<li class="clearfix">';
-      $content = '<span class="label">' . check_plain($type->name) . '</span>';
-      $content .= '<div class="description">' . filter_xss_admin($type->description) . '</div>';
-      $options['html'] = TRUE;
-      $output .= l($content, 'node/add/' . $type->type, $options);
-      $output .= '</li>';
+function seven_preprocess_node_add_list(&$variables) {
+  if (!empty($variables['content'])) {
+    foreach ($variables['content'] as $type) {
+      $variables['types'][$type->type]['label'] = check_plain($type->name);
+      $variables['types'][$type->type]['path'] = url('node/add/' . $type->type);
     }
-    $output .= '</ul>';
   }
-  else {
-    $output = '<p>' . t('You have not created any content types yet. Go to the <a href="@create-content">content type creation page</a> to add a new content type.', array('@create-content' => url('admin/structure/types/add'))) . '</p>';
-  }
-  return $output;
 }
 
 /**
- * Overrides theme_custom_block_add_list().
+ * Overrides variables for custom-block-add-list.html.twig
+ * Add variables for the label and the path separately.
  *
- * Displays the list of available custom block types for creation.
+ * Displays the list of available custom block types for creation, adding
+ * separate variables for the label and the path.
+ *
  */
-function seven_custom_block_add_list($variables) {
-  $content = $variables['content'];
-  $output = '';
-  if ($content) {
-    $output = '<ul class="admin-list">';
-    foreach ($content as $type) {
-      $output .= '<li class="clearfix">';
-      $content = '<span class="label">' . check_plain($type->label()) . '</span>';
-      $content .= '<div class="description">' . filter_xss_admin($type->description) . '</div>';
-      $options['html'] = TRUE;
-      $output .= l($content, 'block/add/' . $type->id(), $options);
-      $output .= '</li>';
+function seven_preprocess_custom_block_add_list(&$variables) {
+  if (!empty($variables['content'])) {
+    foreach ($variables['content'] as $type) {
+      $variables['types'][$type->id]['label'] = check_plain($type->label());
+      $variables['types'][$type->id]['path'] = url('block/add/' . $type->id);
     }
-    $output .= '</ul>';
   }
-  return $output;
 }
 
 /**
  * Overrides theme_admin_block_content().
  *
+ * Prepare variables for administrative content block templates.
  * Uses an unordered list markup in both compact and extended mode.
  */
-function seven_admin_block_content($variables) {
-  $content = $variables['content'];
-  $output = '';
-  if (!empty($content)) {
-    $output = system_admin_compact_mode() ? '<ul class="admin-list compact">' : '<ul class="admin-list">';
-    foreach ($content as $item) {
-      $output .= '<li>';
-      $content = '<span class="label">' . filter_xss_admin($item['title']) . '</span>';
-      $options = $item['localized_options'];
-      $options['html'] = TRUE;
-      if (isset($item['description']) && !system_admin_compact_mode()) {
-        $content .= '<div class="description">' . filter_xss_admin($item['description']) . '</div>';
-      }
-      $output .= l($content, $item['href'], $options);
-      $output .= '</li>';
+function seven_preprocess_admin_block_content(&$variables) {
+  if (!empty($variables['content'])) {
+    $variables['compact'] = system_admin_compact_mode() ? 'compact' : '';
+    foreach ($variables['content'] as $key => $item) {
+      $variables['content'][$key]['label'] = filter_xss_admin($item['title']);
+      $variables['content'][$key]['path'] = url($item['href']);
+      $variables['content'][$key]['description'] = filter_xss_admin($item['description']);
     }
-    $output .= '</ul>';
   }
-  return $output;
 }
 
 /**
- * Overrides theme_tablesort_indicator().
- *
- * Uses Seven's image versions, so the arrows show up as black and not gray on
- * gray.
+ * Implements hook_preprocess_HOOK() for tablesort-indicator.html.twig.
  */
-function seven_tablesort_indicator($variables) {
-  $style = $variables['style'];
-  $theme_path = drupal_get_path('theme', 'seven');
-  if ($style == 'asc') {
-    return theme('image', array('uri' => $theme_path . '/images/arrow-asc.png', 'alt' => t('sort ascending'), 'width' => 13, 'height' => 13, 'title' => t('sort ascending')));
-  }
-  else {
-    return theme('image', array('uri' => $theme_path . '/images/arrow-desc.png', 'alt' => t('sort descending'), 'width' => 13, 'height' => 13, 'title' => t('sort descending')));
-  }
+function seven_preprocess_tablesort_indicator(&$variables) {
+  $variables['uri'] = drupal_get_path('theme', 'seven') . '/images/arrow-' . ($variables['style'] == 'asc' ? 'asc' : 'desc') . '.png';
+  $variables['attributes']['src'] = file_create_url($variables['uri']);
 }
 
 /**
