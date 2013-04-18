@@ -1,0 +1,51 @@
+{#
+/**
+ * @file
+ * Default theme implementation for an item list.
+ *
+ * Available variables:
+ * - items: A list of renderable items. In addition to any standard render array
+ *   properties, each item has a #wrapper_attributes property which contains any
+ *   HTML attributes which should be applied to the <li> tag.
+ * - title: The title of the list.
+ * - list_type: The type of list to return (e.g. "ul", "ol").
+ * - attributes: HTML attributes to be applied to the list.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_item_list()
+ * @todo remove title and div tag as per http://drupal.org/node/1842140.
+ *
+ * @ingroup themeable
+ */
+#}
+{#
+  The spaceless tag is used and not indented because testItemList() expects
+  item lists to be printed on one line without spaces.
+#}
+{% if items %}
+{% spaceless %}
+  <div class="item-list">
+    {% if title is not empty -%}
+      <h3>{{ title }}</h3>
+    {%- endif %}
+
+    {% if list_type == 'ul' %}
+    <ul{{ attributes }}>
+    {% else %}
+    <ol{{ attributes }}>
+    {% endif %}
+
+      {% for item in items %}
+        {# Get list item attributes from render array property. #}
+        {%- set li_attributes = item['#wrapper_attributes'] -%}
+        <li{{ li_attributes }}>{{ item }}</li>
+      {%- endfor %}
+
+    {% if list_type == 'ul' %}
+    </ul>
+    {% else %}
+    </ol>
+    {% endif %}
+  </div>
+{% endspaceless %}
+{% endif %}
