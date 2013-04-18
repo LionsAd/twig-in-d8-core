@@ -1,0 +1,35 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a taxonomy term.
+ *
+ * Available variables:
+ * - url: Direct URL of the current term.
+ * - name: Name of the current term.
+ * - content: Items for the content of the term (fields and description).
+ *   Use 'content' to print them all, or print a subset such as
+ *   'content.field_example'. Use {% hide(content.field_example) %} to
+ *   temporarily suppress the printing of a given element.
+ * - attributes: HTML attributes for the containing element. It includes
+ *   the 'class' information, which includes:
+ *   - taxonomy-term: The current template type, i.e., "theming hook".
+ *   - vocabulary-[vocabulary-name]: The vocabulary that this term belongs to.
+ *     For example, if the term is a "Tag" it would result in "vocabulary-tag".
+ * - page: Flag for the full page state.
+ * - term: Full term object.
+ * - view_mode: View mode, e.g. 'full', 'teaser', etc.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_taxonomy_term()
+ *
+ * @ingroup themeable
+ */
+#}
+<div id="taxonomy-term-{{ term.tid }}"{{ attributes }}>
+  {% if not page %}
+    <h2><a href="{{ url }}">{{ name }}</a></h2>
+  {% endif %}
+  <div class="content">
+    {{ content }}
+  </div>
+</div>
