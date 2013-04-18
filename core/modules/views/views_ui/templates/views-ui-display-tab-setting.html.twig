@@ -1,0 +1,25 @@
+{#
+/**
+ * @file
+ * Template for each row inside the "boxes" on the display query edit screen.
+ *
+ * Available variables:
+ * - attributes: HTML attributes such as class for the container.
+ * - description: The description or label for this setting.
+ * - zebra: A CSS class dentifying the row as either 'odd' or 'even'.
+ * - settings_links: A list of links for this setting.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_views_ui_display_tab_bucket()
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="views-display-setting {{ attributes.class }} {{ zebra }} clearfix"{{ attributes }}>
+  {% if description -%}
+    <span class="label">{{ description }}</span>
+  {%- endif %}
+  {% if settings_links %}
+    {{ settings_links|join('<span class="label">&nbsp;|&nbsp;</span>') }}
+  {% endif %}
+</div>
