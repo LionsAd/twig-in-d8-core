@@ -1,0 +1,20 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a node type description.
+ *
+ * This description is used for the content types admin page.
+ *
+ * Available variables:
+ * - name: Human readable name of the content type.
+ * - machine_name: Machine readable name of the content type.
+ * - description: Description of the content type.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_node_admin_overview()
+ *
+ * @ingroup themeable
+ */
+#}
+{{ name }} <small>{{ '(Machine name: @type)'|t({'@type': machine_name}) }}</small>
+<div class="description">{{ description }}</div>

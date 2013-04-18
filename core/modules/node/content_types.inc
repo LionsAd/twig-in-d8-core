@@ -75,27 +75,20 @@ function node_overview_types() {
 }
 
 /**
- * Returns HTML for a node type description for the content type admin page.
+ * Prepares variables for node type description templates.
  *
- * @param $variables
+ * Default template: node-admin-overview.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - name: The human-readable name of the content type.
  *   - type: An object containing the 'type' (machine name) and 'description' of
  *     the content type.
- *
- * @return string
- *   An HTML-formatted string of the description for this node type.
- *
- * @ingroup themeable
  */
-function theme_node_admin_overview($variables) {
-  $name = $variables['name'];
-  $type = $variables['type'];
-
-  $output = check_plain($name);
-  $output .= ' <small>' . t('(Machine name: @type)', array('@type' => $type->type)) . '</small>';
-  $output .= '<div class="description">' . filter_xss_admin($type->description) . '</div>';
-  return $output;
+function template_preprocess_node_admin_overview(&$variables) {
+  $variables['name'] = check_plain($variables['name']);
+  $variables['description'] = filter_xss_admin($variables['type']->description);
+  $variables['machine_name'] = $variables['type']->type;
 }
 
 /**
