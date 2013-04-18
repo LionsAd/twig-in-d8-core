@@ -1,0 +1,40 @@
+{#
+/**
+ * Default theme implementation for a generic HTML tag with attributes.
+ *
+ * Available variables:
+ * - tag: The tag name to output. Typical tags added to the HTML <head>:
+ *   - meta: Used to provide meta information, such as a page refresh.
+ *   - link: Used to refer to stylesheets and other contextual information.
+ *   - script: Used for loading JavaScript.
+ * - attributes: (optional) Remaining HTML attributes to apply to the tag.
+ * - value: (optional) The tag content, such as inline CSS.
+ * - value_prefix: (optional) Prepend this to 'value', e.g. a CDATA wrapper
+ *   prefix.
+ * - value_suffix: (optional) Append this to 'value', e.g. a CDATA wrapper
+ *   suffix.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_html_tag()
+ *
+ * @ingroup themeable
+ */
+ @todo Delete this file once http://drupal.org/node/1825090 is resolved.
+#}
+{#
+  We use 'is defined' here because <script> always needs a closing tag, and
+  'value' is set to an empty string for <script> tags with only a src value.
+#}
+{% if value is defined -%}
+  <{{ tag }}{{ attributes }}>
+    {%- if value_prefix -%}
+      {{- value_prefix -}}
+    {%- endif -%}
+    {{- value -}}
+    {%- if value_suffix -%}
+      {{- value_suffix -}}
+    {%- endif -%}
+  </{{ tag }}>
+{% else -%}
+  <{{ tag }}{{ attributes }} />
+{% endif %}
