@@ -174,7 +174,7 @@ class ThemeTest extends WebTestBase {
    * Ensures the theme registry is rebuilt when modules are disabled/enabled.
    */
   function testRegistryRebuild() {
-    $this->assertIdentical(theme('theme_test_foo', array('foo' => 'a')), 'a', 'The theme registry contains theme_test_foo.');
+    $this->assertIdentical(trim(theme('theme_test_foo', array('foo' => 'a'))), 'a', 'The theme registry contains theme_test_foo.');
 
     module_disable(array('theme_test'), FALSE);
     // After enabling/disabling a module during a test, we need to rebuild the
@@ -190,7 +190,7 @@ class ThemeTest extends WebTestBase {
     // throws an exception.
     $this->rebuildContainer();
     $this->container->get('module_handler')->loadAll();
-    $this->assertIdentical(theme('theme_test_foo', array('foo' => 'c')), 'c', 'The theme registry contains theme_test_foo again after re-enabling the module.');
+    $this->assertIdentical(trim(theme('theme_test_foo', array('foo' => 'c'))), 'c', 'The theme registry contains theme_test_foo again after re-enabling the module.');
   }
 
   /**
