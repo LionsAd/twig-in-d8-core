@@ -1,0 +1,19 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a more link, as often used on blocks.
+ *
+ * Available variables:
+ * - url: Location where the more link is pointing.
+ * - title: The title attribute of the more link.
+ * - attributes: HTML attributes for surrounding element.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_more_link()
+ *
+ * @ingroup themeable
+ */
+#}
+<div{{ attributes }}>
+  <a href="{{ url }}" title="{{ title }}">{{ 'More'|t }}</a>
+</div>
