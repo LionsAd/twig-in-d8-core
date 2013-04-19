@@ -1,0 +1,32 @@
+{#
+/**
+ * @file
+ * Default theme implementation for comment forbidden notice templates.
+ *
+ * Available variables:
+ * - logged_out: Whether the user viewing the site is logged out.
+ * - can_post_comments: Whether authenticated users can post comments once
+ *   logged in.
+ * - user_register: Whether a user is allowed to register for the site.
+ * - user_login_url: The URL where a user may log in.
+ * - user_register_url: The URL where a user may register.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_comment_post_forbidden()
+ *
+ * @ingroup themable
+ */
+#}
+{#
+  We only output a link if the current user is logged out and we are certain
+  that users will get permission to post comments by logging in.
+
+  @todo Consider moving this decision out of the template.
+#}
+{% if logged_out and can_post_comments %}
+  {% if user_register %}
+    {{ '<a href="@login">Log in</a> or <a href="@register">register</a> to post comments'|t({'@login': user_login_url, '@register': user_register_url}) }}
+  {% else %}
+    {{ '<a href="@login">Log in</a> to post comments'|t({'@login': user_login_url}) }}
+  {% endif %}
+{% endif %}
