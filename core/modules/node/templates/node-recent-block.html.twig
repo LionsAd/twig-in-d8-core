@@ -1,0 +1,21 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a list of recent content.
+ *
+ * Available variables:
+ * - table: A rendered HTML table of recent content.
+ * - more_link: A rendered link to show more content.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_node_recent_block()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if table %}
+  {{ table }}
+{% endif %}
+{% if more_link %}
+  {{ more_link }}
+{% endif %}
