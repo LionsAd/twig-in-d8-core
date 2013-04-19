@@ -1,0 +1,29 @@
+{#
+/**
+ * @file
+ * Default theme implementation for unformatted summary links.
+ *
+ * Available variables:
+ * - rows: The rows contained in this view.
+ *   - url: The URL to this row's content.
+ *   - count: The number of items this summary item represents.
+ *   - separator: A separator between each row.
+ * - row_classes: A list of classes that correlate to each row by id.
+ * - options: @todo.
+ *   - count: An option to show/hide the 'count' to show the row's 'count'.
+ *   - inline: Wraps each item in a span tag if set or a div if not set.
+ *
+ * @ingroup themable
+ */
+#}
+{% for id, row in rows  %}
+  {{ options.inline ? '<span' : '<div' }} class="views-summary views-summary-unformatted">
+  {% if row.separator %}
+    {{ row.separator }}
+  {% endif %}
+  <a href="{{ row.url }}" class="{{ row_classes[id] }}">{{ row.link }}</a>
+  {% if options.count %}
+    ({{ row.count }})
+  {% endif %}
+  {{ options.inline ? '</span>' : '</div>' }}
+{% endfor %}
