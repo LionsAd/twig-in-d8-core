@@ -1,0 +1,38 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a picture source tag.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the source tag, including:
+ *   - media: The media query to use.
+ *   - width: The width of the image (if known).
+ *   - height: The width of the image (if known).
+ *   One of the following two variables will be available:
+ *   - src: Either the path of the image file (relative to base_path()) or a
+ *     full URL.
+ *   - srcset: A group of image sources/resolutions used to display different
+ *     image resolutions at different breakpoints.
+ * - attributes_copy: A copy of the HTML attributes in the 'attributes' variable
+ *   to allow for printing the attributes a second time for the commented source
+ *   tags. Drupal's Attribute object keeps track of which attributes have been
+ *   printed and will only print an attribute once.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_picture_source()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if attributes.media %}
+  {% if attributes.src %}
+  <!-- <source{{ attributes_copy }} /> -->
+    <source{{ attributes }} />
+  {% elseif attributes.srcset %}
+    <!-- <source{{ attributes_copy }} /> -->
+    <source{{ attributes }} />
+  {% endif %}
+{% else %}
+  <!-- <source{{ attributes_copy }} /> -->
+  <source{{ attributes }} />
+{% endif %}
