@@ -1,0 +1,16 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the content of simpletest result summary.
+ *
+ * Available variables:
+ * - status: Pass or fail of test.
+ * - summary: Summary info of test.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_simpletest_result_summary()
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="simpletest-{{ status }}">{{ summary }}</div>
