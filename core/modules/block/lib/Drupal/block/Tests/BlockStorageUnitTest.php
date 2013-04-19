@@ -140,11 +140,13 @@ class BlockStorageUnitTest extends DrupalUnitTestBase {
     // Test the rendering of a block.
     $output = entity_view($entity, 'block');
     $expected = array();
-    $expected[] = '  <div id="block-test-block"  class="block block-block-test">';
-    $expected[] = '';
+    $expected[] = '<div class="block block-block-test" id="block-test-block">';
+    $expected[] = '  ';
     $expected[] = '    ';
-    $expected[] = '  <div class="content">';
-    $expected[] = '      </div>';
+    $expected[] = '';
+    $expected[] = '  <div class="content ">';
+    $expected[] = '   ';
+    $expected[] = '  </div>';
     $expected[] = '</div>';
     $expected[] = '';
     $expected_output = implode("\n", $expected);
@@ -157,12 +159,14 @@ class BlockStorageUnitTest extends DrupalUnitTestBase {
     $entity->set('label', 'Powered by Bananas');
     $output = entity_view($entity, 'block');
     $expected = array();
-    $expected[] = '  <div id="block-test-block"  class="block block-block-test">';
-    $expected[] = '';
-    $expected[] = '    <h2 class="">Powered by Bananas</h2>';
+    $expected[] = '<div class="block block-block-test" id="block-test-block">';
     $expected[] = '  ';
-    $expected[] = '  <div class="content">';
-    $expected[] = '      </div>';
+    $expected[] = '      <h2 class="">Powered by Bananas</h2>';
+    $expected[] = '    ';
+    $expected[] = '';
+    $expected[] = '  <div class="content ">';
+    $expected[] = '   ';
+    $expected[] = '  </div>';
     $expected[] = '</div>';
     $expected[] = '';
     $expected_output = implode("\n", $expected);

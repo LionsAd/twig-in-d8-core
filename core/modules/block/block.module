@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Plugin\Exception\PluginException;
+use Drupal\Core\Template\Attribute;
 
 /**
  * Denotes that a block is not enabled in any region and should not be shown.
@@ -519,39 +520,40 @@ function block_rebuild() {
 }
 
 /**
- * Processes variables for block.tpl.php.
+ * Prepares variables for block templates.
  *
- * Prepares the values passed to the theme_block function to be passed
- * into a pluggable template engine. Uses block properties to generate a
- * series of template file suggestions. If none are found, the default
- * block.tpl.php is used.
+ * Default template: block.html.twig.
  *
- * Most themes utilize their own copy of block.tpl.php. The default is located
- * inside "modules/block/block.tpl.php". Look in there for the full list of
- * variables.
+ * Most themes use their own copy of block.html.twig. The default is located
+ * inside "core/modules/block/templates/block.html.twig". Look in there for the
+ * full list of available variables.
  *
- * The $variables array contains the following arguments:
- * - $block
- *
- * @see block.tpl.php
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An associative array containing the properties of the element.
+ *     Properties used: #block, #block_config, #children.
  */
 function template_preprocess_block(&$variables) {
   $block_counter = &drupal_static(__FUNCTION__, array());
 
   $variables['block'] = (object) $variables['elements']['#block_config'];
+  if (!isset($variables['block']->label)) {
+    $variables['block']->label = $variables['elements']['#block']->label;
+  }
   // If the block title is configured to be hidden, set it to an empty string.
   if (empty($variables['elements']['#block']->label_display)) {
     $variables['block']->label_hidden = $variables['block']->label;
     $variables['block']->label = '';
   }
+  $variables['label'] = $variables['block']->label;
 
   // Create the $content variable that templates expect.
   $variables['content'] = $variables['elements']['#children'];
 
-  $variables['attributes']['class'][] = drupal_html_class('block-' . $variables['block']->module);
+  $variables['attributes'] = new Attribute;
+  $variables['attributes']['class'] = array();
 
-  // Add default class for block content.
-  $variables['content_attributes']['class'][] = 'content';
+  $variables['attributes']['class'][] = drupal_html_class('block-' . $variables['block']->module);
 
   $variables['theme_hook_suggestions'][] = 'block__' . $variables['block']->module;
   // Hyphens (-) and underscores (_) play a special role in theme suggestions.
@@ -574,7 +576,7 @@ function template_preprocess_block(&$variables) {
   if ($id = $variables['elements']['#block']->id()) {
     $config_id = explode('.', $id);
     $machine_name = array_pop($config_id);
-    $variables['block_html_id'] = drupal_html_id('block-' . $machine_name);
+    $variables['attributes']['id'] = drupal_html_id('block-' . $machine_name);
     $variables['theme_hook_suggestions'][] = 'block__' . $machine_name;
   }
 }
