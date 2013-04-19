@@ -1,0 +1,29 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a form element label.
+ *
+ * Available variables:
+ * - label: (optional) The text of the label, may not be set if there is no
+ *   title and the element is not required.
+ * - required: A rendered marker indicating the field is required, or an empty
+ *   string if the field is not required.
+ * - attributes: A list of HTML attributes for the label.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_form_label()
+ * @see form-required-marker.html.twig
+ *
+ * @ingroup themeable
+ */
+#}
+{% if (label is not empty) or (required is not empty) %}
+  <label{{ attributes }}>
+    {%- if label is not empty -%}
+      {{ label }}
+    {%- endif -%}
+    {%- if required is not empty -%}
+      {{ required }}
+    {%- endif -%}
+  </label>
+{% endif %}
