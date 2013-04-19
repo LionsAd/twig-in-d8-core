@@ -1,0 +1,68 @@
+{#
+/**
+ * @file
+ * Default theme implementation for expose filter form.
+ *
+ * Available variables:
+ * - form_description: @todo.
+ * - expose_button: @todo.
+ * - group_button: @todo.
+ * - required: @todo.
+ * - label: @todo.
+ * - description: @todo.
+ * - operator: @todo.
+ * - value: @todo.
+ * - use_operator: @todo.
+ * - widget: @todo.
+ * - label: @todo.
+ * - description: @todo.
+ * - has_left_column: @todo.
+ * - children: Child elements of the form that still need to be printed.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_views_ui_expose_filter_form()
+ *
+ * @ingroup themeable
+ */
+#}
+{{ form_description }}
+{{ expose_button }}
+{{ group_button }}
+
+{% if required %}
+  {{ required }}
+{% endif %}
+
+{{ label }}
+{{ description }}
+
+{% if operator %}
+  {{ operator }}
+{% endif %}
+{% if value %}
+  {{ value }}
+{% endif %}
+
+{% if use_operator %}
+  <div class="views-left-40">
+    {{ use_operator }}
+  </div>
+{% endif %}
+
+<div class="views-right-60">
+  {% if widget %}
+    {{ widget }}
+  {% endif %}
+  {{ label }}
+  {{ description }}
+</div>
+
+{% if has_left_column %}
+  <div class="views-right-60">
+    {{ children }}
+  </div>
+{% else %}
+  {{ children }}
+{% endif %}
+
+{{ more }}

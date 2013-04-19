@@ -98,43 +98,57 @@ function theme_views_ui_view_info($variables) {
 }
 
 /**
- * Theme the expose filter form.
+ * Prepares variables for Views UI expose filter form.
+ *
+ * Default template: views-ui-expose-filter-form.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - form: A render element representing the form.
  */
-function theme_views_ui_expose_filter_form($variables) {
+function template_preprocess_views_ui_expose_filter_form(&$variables) {
   $form = $variables['form'];
-  $more = drupal_render($form['more']);
+  $variables['form_description'] = $form['form_description'];
+  $variables['expose_button'] = $form['expose_button'];
+  $variables['group_button'] = $form['group_button'];
+  unset($form['form_description']);
+  unset($form['expose_button']);
+  unset($form['group_button']);
 
-  $output = drupal_render($form['form_description']);
-  $output .= drupal_render($form['expose_button']);
-  $output .= drupal_render($form['group_button']);
   if (isset($form['required'])) {
-    $output .= drupal_render($form['required']);
+    $variables['required'] = $form['required'];
+    unset($form['required']);
   }
-  $output .= drupal_render($form['label']);
-  $output .= drupal_render($form['description']);
 
-  $output .= drupal_render($form['operator']);
-  $output .= drupal_render($form['value']);
+  $variables['label'] = $form['label'];
+  $variables['description'] = $form['description'];
+  unset($form['label']);
+  unset($form['description']);
+
+  $variables['operator'] = $form['operator'];
+  $variables['value'] = $form['value'];
+  unset($form['operator']);
+  unset($form['value']);
 
   if (isset($form['use_operator'])) {
-    $output .= '<div class="views-left-40">';
-    $output .= drupal_render($form['use_operator']);
-    $output .= '</div>';
+    $variables['use_operator'] = $form['use_operator'];
+    unset($form['use_operator']);
   }
 
-  // Only output the right column markup if there's a left column to begin with
+  // Only output the right column markup if there's a left column to begin with.
   if (!empty($form['operator']['#type'])) {
-    $output .= '<div class="views-right-60">';
-    $output .= drupal_render_children($form);
-    $output .= '</div>';
+    $variables['has_left_column'] = TRUE;
   }
   else {
-    $output .= drupal_render_children($form);
+    $variables['has_left_column'] = FALSE;
   }
 
-  $output .= $more;
+  $variables['more'] = $form['more'];
+  unset($form['more']);
 
-  return $output;
+  // Remove elements from the 'children' render array.
+  // @todo Refactor when http://drupal.org/node/1920886 is resolved.
+  $variables['children'] = drupal_render_children($form);
 }
 
 /**
