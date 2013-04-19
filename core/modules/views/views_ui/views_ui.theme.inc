@@ -15,6 +15,20 @@ function theme_views_ui_container($variables) {
   return '<div' . new Attribute($element['#attributes']) . '>' . $element['#children'] . '</div>';
 }
 
+/**
+ * Prepares variables for Views UI display tab setting templates.
+ *
+ * Default template: views-ui-display-tab-setting.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - link: @todo.
+ *   - settings_links: @todo.
+ *   - defaulted: @todo.
+ *   - overridden: @todo.
+ *   - description: @todo.
+ *   - description_separator: @todo.
+ */
 function template_preprocess_views_ui_display_tab_setting(&$variables) {
   static $zebra = 0;
   $variables['zebra'] = ($zebra % 2 === 0 ? 'odd' : 'even');
@@ -22,7 +36,6 @@ function template_preprocess_views_ui_display_tab_setting(&$variables) {
 
   // Put the main link to the left side
   array_unshift($variables['settings_links'], $variables['link']);
-  $variables['settings_links'] = implode('<span class="label">&nbsp;|&nbsp;</span>', $variables['settings_links']);
 
   if (!empty($variables['defaulted'])) {
     $variables['attributes']['class'][] = 'defaulted';
