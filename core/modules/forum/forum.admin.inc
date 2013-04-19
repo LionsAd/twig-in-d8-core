@@ -127,19 +127,22 @@ function forum_form_submit($form, &$form_state) {
 }
 
 /**
- * Returns HTML for a forum form.
+ * Prepares variables for forum form templates.
  *
- * By default this does not alter the appearance of a form at all, but is
- * provided as a convenience for themers.
+ * Default template: forum-form.html.twig.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - form: A render element representing the form.
- *
- * @ingroup themeable
  */
-function theme_forum_form($variables) {
-  return drupal_render_children($variables['form']);
+function template_preprocess_forum_form(&$variables) {
+  // Prevent recursion loop by removing '#theme' and '#theme_wrappers' keys.
+  // See http://drupal.org/node/1920886.
+  foreach (array('#theme', '#theme_wrappers') as $theme_key) {
+    if (isset($variables['form'][$theme_key])) {
+      unset($variables['form'][$theme_key]);
+    }
+  }
 }
 
 /**
