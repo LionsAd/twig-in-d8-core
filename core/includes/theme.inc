@@ -2393,20 +2393,40 @@ function theme_mark($variables) {
 }
 
 /**
- * Preprocesses variables for theme_item_list().
+ * Prepares variables for item list templates.
+ *
+ * Default template: item-list.html.twig.
  *
  * @param array $variables
- *   An associative array containing theme variables for theme_item_list().
- *   'items' in variables will be processed to automatically inherit the
- *   variables of this list to any possibly contained nested lists that do not
- *   specify custom render properties. This allows callers to specify larger
- *   nested lists, without having to explicitly specify and repeat the render
- *   properties for all nested child lists.
+ *   An associative array containing:
+ *   - items: An array of items to be displayed in the list. Each item can be
+ *     either a string or a render array. If #type, #theme, or #markup
+ *     properties are not specified for child render arrays, they will be
+ *     inherited from the parent list, allowing callers to specify larger
+ *     nested lists without having to explicitly specify and repeat the
+ *     render properties for all nested child lists.
+ *   - title: A title to be prepended to the list.
+ *   - type: The type of list to return (e.g. "ul", "ol").
+ *
+ * @see http://drupal.org/node/1842756
  */
 function template_preprocess_item_list(&$variables) {
+  $variables['title'] = (string) $variables['title'];
+  // Change the name since 'type' clashes with #type.
+  $variables['list_type'] = $variables['type'];
+
+  // Prepare for adding classes to each item.
+  $num_items = count($variables['items']);
+  $i = 0;
   foreach ($variables['items'] as &$item) {
+    $i++;
+    $attributes = array();
     // If the item value is an array, then it is a render array.
     if (is_array($item)) {
+      // List items support attributes via the #wrapper_attributes property.
+      if (isset($item['#wrapper_attributes']) && is_array($item['#wrapper_attributes'])) {
+        $attributes = $item['#wrapper_attributes'];
+      }
       // Determine whether there are any child elements in the item that are not
       // fully-specified render arrays. If there are any, then the child
       // elements present nested lists and we automatically inherit the render
@@ -2436,66 +2456,37 @@ function template_preprocess_item_list(&$variables) {
         }
       }
     }
-  }
-}
-
-/**
- * Returns HTML for a list or nested list of items.
- *
- * @param $variables
- *   An associative array containing:
- *   - items: A list of items to render. Allowed values are strings or
- *     render arrays. Render arrays can specify list item attributes in the
- *     #wrapper_attributes property.
- *   - title: The title of the list.
- *   - type: The type of list to return (e.g. "ul", "ol").
- *   - attributes: The attributes applied to the list element.
- */
-function theme_item_list($variables) {
-  $items = $variables['items'];
-  $title = (string) $variables['title'];
-  // @todo 'type' clashes with '#type'. Rename to 'tag'.
-  $type = $variables['type'];
-  $list_attributes = $variables['attributes'];
-
-  $output = '';
-  if ($items) {
-    $output .= '<' . $type . new Attribute($list_attributes) . '>';
-
-    $num_items = count($items);
-    $i = 0;
-    foreach ($items as &$item) {
-      $i++;
-      $attributes = array();
-      if (is_array($item)) {
-        if (isset($item['#wrapper_attributes'])) {
-          $attributes = $item['#wrapper_attributes'];
-        }
-        $item = drupal_render($item);
-      }
-      $attributes['class'][] = ($i % 2 ? 'odd' : 'even');
-      if ($i == 1) {
-        $attributes['class'][] = 'first';
-      }
-      if ($i == $num_items) {
-        $attributes['class'][] = 'last';
-      }
-      $output .= '<li' . new Attribute($attributes) . '>' . $item . '</li>';
+    else {
+      // Turn the item into an array if it wasn't one already.
+      $item = array('#markup' => $item);
     }
-    $output .= "</$type>";
-  }
 
-  // Only output the list container and title, if there are any list items.
-  // Check to see whether the block title exists before adding a header.
-  // Empty headers are not semantic and present accessibility challenges.
-  if ($output !== '') {
-    if ($title !== '') {
-      $title = '<h3>' . $title . '</h3>';
+    // @todo Remove after http://drupal.org/node/1649780 lands.
+    $attributes['class'][] = ($i % 2 ? 'odd' : 'even');
+    if ($i == 1) {
+      $attributes['class'][] = 'first';
     }
-    $output = '<div class="item-list">' . $title . $output . '</div>';
+    if ($i == $num_items) {
+      $attributes['class'][] = 'last';
+    }
+
+    // In order to avoid '..is not a valid render element' errors in render(),
+    // use the #-prefixed #wrapper_attributes property to store item wrapper
+    // attributes for Twig.
+    $item['#wrapper_attributes'] = new Attribute($attributes);
   }
 
-  return $output;
+  // Remove default 'item-list' class from attributes, but leave other classes.
+  // @todo: Remove this hack once http://drupal.org/node/1938430 lands.
+  if (!empty($variables['attributes']['class'])) {
+    $variables['attributes']['class'] = array_diff($variables['attributes']['class'], array('item-list'));
+    if (empty($variables['attributes']['class'])) {
+      unset ($variables['attributes']['class']);
+    }
+  }
+
+  // These are the top level list attributes.
+  $variables['attributes'] = new Attribute($variables['attributes']);
 }
 
 /**
@@ -3243,6 +3234,7 @@ function drupal_common_theme() {
     ),
     'item_list' => array(
       'variables' => array('items' => array(), 'title' => '', 'type' => 'ul', 'attributes' => array()),
+      'template' => 'item-list',
     ),
     'more_help_link' => array(
       'variables' => array('url' => NULL),
