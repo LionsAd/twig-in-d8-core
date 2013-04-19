@@ -23,6 +23,7 @@ class FieldAttachOtherTest extends FieldUnitTestBase {
 
   public function setUp() {
     parent::setUp();
+    $this->installSchema('user', array('role_permission'));
     $this->createFieldWithInstance();
   }
 
