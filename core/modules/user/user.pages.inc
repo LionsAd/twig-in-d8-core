@@ -5,6 +5,7 @@
  * User page callback file for the user module.
  */
 
+use Drupal\Core\Template\Attribute;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -175,12 +176,14 @@ function user_logout() {
 }
 
 /**
- * Process variables for user.tpl.php.
+ * Prepares variables for user templates.
  *
- * The $variables array contains the following arguments:
- * - $account
+ * Default template: user.html.twig.
  *
- * @see user.tpl.php
+ * @param array $variables
+ *   An associative array containing:
+ *   - account: The user account to check access for
+ *     (Drupal\user\Plugin\Core\Entity\User).
  */
 function template_preprocess_user(&$variables) {
   $account = $variables['elements']['#user'];
@@ -192,6 +195,9 @@ function template_preprocess_user(&$variables) {
 
   // Preprocess fields.
   field_attach_preprocess($account, $variables['elements'], $variables);
+
+  // Set up attributes.
+  $variables['attributes'] = new Attribute(array('class' => array('profile')));
 }
 
 /**
