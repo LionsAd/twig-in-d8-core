@@ -1,0 +1,18 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a pager.
+ *
+ * Available variables:
+ * - items: List of pager items.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_pager()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if items %}
+  <h2 class="element-invisible">{{ 'Pages'|t }}</h2>
+  {{ items }}
+{% endif %}
