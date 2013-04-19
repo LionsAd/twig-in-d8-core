@@ -1,0 +1,30 @@
+{#
+/**
+ * @file
+ * Default theme implementation to present @todo.
+ *
+ * Available variables:
+ * - title: @todo.
+ * - date: @todo.
+ * - feeds: @todo.
+ *   - feed.title: @todo.
+ *   - feed.url: @todo.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_aggregator_page_opml()
+ *
+ * @ingroup themeable
+ */
+#}
+<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<opml version=\"1.1\">
+  <head>
+    <title>{{ title }}</title>
+    <dateModified>{{ date }}</dateModified>
+  </head>
+<body>
+  {% for feed in feeds %}
+    <outline text="{{ feed.title }}" xmlUrl="{{ feed.url }}" />
+  {% endfor %}
+</body>
+</opml>
