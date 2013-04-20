@@ -1,0 +1,2 @@
+cat list | grep '#' | cut -d'#' -f2 | cut -d ':' -f1 > list-nids.txt
+for i in $(cat list-nids.txt); do curl http://drupal.org/node/$i > issue-$i.txt; done
