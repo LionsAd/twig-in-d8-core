@@ -2316,20 +2316,37 @@ function template_preprocess_table(&$variables) {
 }
 
 /**
- * Returns HTML for a sort icon.
+ * Prepares variables for tablesort indicator templates.
  *
- * @param $variables
+ * Default template: tablesort-indicator.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
- *   - style: Set to either 'asc' or 'desc', this determines which icon to
- *     show.
+ *   - style: Set to either 'asc' or 'desc'. This determines which icon to show.
+ *
+ * @todo Remove this preprocess function and consolidate with 'image' as per
+ *   http://drupal.org/node/1973418
  */
-function theme_tablesort_indicator($variables) {
-  if ($variables['style'] == "asc") {
-    return theme('image', array('uri' => 'core/misc/arrow-asc.png', 'width' => 13, 'height' => 13, 'alt' => t('sort ascending'), 'title' => t('sort ascending')));
+function template_preprocess_tablesort_indicator(&$variables) {
+  // Provide the image attributes for an ascending or descending image.
+  if ($variables['style'] == 'asc') {
+    $variables['uri'] = 'core/misc/arrow-asc.png';
+    $alt_title = t('sort ascending');
   }
   else {
-    return theme('image', array('uri' => 'core/misc/arrow-desc.png', 'width' => 13, 'height' => 13, 'alt' => t('sort descending'), 'title' => t('sort descending')));
+    $variables['uri'] = 'core/misc/arrow-desc.png';
+    $alt_title = t('sort descending');
   }
+
+  // Add the image element.
+  $variables['image'] = array(
+    '#theme' => 'image',
+    '#uri' => $variables['uri'],
+    '#width' => 13,
+    '#height' => 13,
+    '#alt' => $alt_title,
+    '#title' => $alt_title,
+  );
 }
 
 /**
@@ -3189,6 +3206,7 @@ function drupal_common_theme() {
     ),
     'tablesort_indicator' => array(
       'variables' => array('style' => NULL),
+      'template' => 'tablesort-indicator',
     ),
     'mark' => array(
       'variables' => array('type' => MARK_NEW),
