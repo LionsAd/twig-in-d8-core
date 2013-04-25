@@ -67,7 +67,11 @@ function update_manager_update_form($form, $form_state = array(), $context) {
     return $form;
   }
 
-  $form['#theme'] = 'update_manager_update_form';
+  $last = state()->get('update.last_check') ?: 0;
+  $form['update_lask_check'] = array(
+    '#theme' => 'update_last_check',
+    '#last' => $last,
+  );
 
   $available = update_get_available(TRUE);
   if (empty($available)) {
@@ -265,23 +269,6 @@ function update_manager_update_form($form, $form_state = array(), $context) {
   }
 
   return $form;
-}
-
-/**
- * Returns HTML for the first page in the process of updating projects.
- *
- * @param $variables
- *   An associative array containing:
- *   - form: A render element representing the form.
- *
- * @ingroup themeable
- */
-function theme_update_manager_update_form($variables) {
-  $form = $variables['form'];
-  $last = state()->get('update.last_check') ?: 0;
-  $output = theme('update_last_check', array('last' => $last));
-  $output .= drupal_render_children($form);
-  return $output;
 }
 
 /**

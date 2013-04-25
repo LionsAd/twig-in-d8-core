@@ -1,0 +1,30 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the version display of a project.
+ *
+ * Available variables:
+ *   - attributes: HTML attributes for the update versions table.
+ *   - version_link: @todo.
+ *   - version_date: The date of the release.
+ *   - version_links: @todo.
+ *   - tag: The title of the project.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_update_version()
+ *
+ * @ingroup themeable
+ */
+#}
+<table{{ attributes }}>
+  <tr>
+    <td class="version-title">{{ tag }}</td>
+    <td class="version-details">
+      {{ version_link }}
+      <span class="version-date">({{ version_date }})</span>
+    </td>
+    <td class="version-links">
+      {{ version_links }}
+    </td>
+  </tr>
+</table>

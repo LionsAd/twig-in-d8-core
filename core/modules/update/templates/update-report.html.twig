@@ -1,0 +1,100 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the project status report.
+ *
+ * Available variables:
+ * - project_types: A list of product types.
+ *   - label: Project type label.
+ *   - projects: Data about each project's status.
+ *     - title: The project tile.
+ *     - attributes: HTML attributes for the product row.
+ *     - status_label: The project status label.
+ *     - reason: @todo.
+ *     - icon: The project status version indicator icon.
+ *     - existing_version: @todo.
+ *     - versions: @todo.
+ *     - install_type: @todo.
+ *     - datestamp: @todo.
+ *     - extra: @todo.
+ *       - attributes: HTML attributes for the extra items.
+ *       - label: @todo.
+ *       - data: @todo.
+ *     - includes: @todo.
+ *     - base_themes: @todo.
+ *     - sub_themes: @todo.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_update_report()
+ *
+ * @ingroup themeable
+ */
+#}
+{% for project_type in project_types %}
+  <h3>{{ project_type.label }}</h3>
+  <table class="update">
+    <tbody>
+      {% for project in project_type.projects %}
+        <tr{{ project.attributes }}>
+          <td>
+            {% spaceless %}
+            <div class="version-status">
+              {{- project.status_label|default(project.reason) -}}
+              <span class="icon">{{ project.icon }}</span>
+            </div>
+            {% endspaceless %}
+
+            <div class="project">{{ project.title }} {{ project.existing_version }}
+              {% if project.install_type == 'dev' and project.datestamp %}
+                <span class="version-date">({{ project.datestamp }})</span>
+              {% endif %}
+            </div>
+
+            {% if project.versions %}
+              <div class="versions">
+              {% for version in project.versions %}
+                {{ version }}
+              {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="info">
+              {% if project.extra %}
+                <div class="extra">
+                  {% for extra in project.extra %}
+                    <div{{ extra.attributes }}>
+                      {{ extra.label }}: {{ extra.data }}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="includes">
+                {% if project.disabled %}
+                  {{ 'Includes:'|t }}
+                  <ul>
+                    <li class="first odd">{{ 'Enabled: %includes'|t({'%includes': project.includes|join(', ')}) }}</li>
+                    <li class="last even">{{ 'Disabled: %disabled'|t({'%disabled': project.disabled|join(', ')}) }}</li>
+                  </ul>
+                {% else %}
+                  {{ 'Includes: %includes'|t({'%includes': project.includes|join(', ')}) }}
+                {% endif %}
+              </div>
+
+              {% if project.base_themes %}
+                <div class="basethemes">
+                {{ 'Depends on: !basethemes'|t({'!basethemes': project.base_themes|join(', ')}) }}
+              </div>
+              {% endif %}
+
+              {% if project.sub_themes %}
+                <div class="subthemes">
+                  {{ 'Required by: %subthemes'|t({'%subthemes': project.sub_themes|join(', ')}) }}
+                </div>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endfor %}
