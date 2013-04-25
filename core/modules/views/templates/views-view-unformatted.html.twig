@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * Default simple View template to display a list of rows.
+ *
+ * Variables available:
+ * - title: The title of this group of rows. May be empty.
+ * - rows: A list of the View's row items.
+ * - row_classes: A list of row class attributes keyed by the row's id.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_views_view_unformatted()
+ *
+ * @ingroup themable
+ */
+#}
+{% if title %}
+  <h3>{{ title }}</h3>
+{% endif %}
+{% for id, row in rows %}
+  <div{{ row_classes[id] }}>
+    {{ row }}
+  </div>
+{% endfor %}

@@ -811,42 +811,49 @@ function template_preprocess_views_view_grid(&$vars) {
 }
 
 /**
- * Display the simple view of rows one after another
+ * Prepares variables for Views unformatted rows templates.
+ *
+ * Default template: views-view-unformatted.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: The View object.
+ *   - rows: @todo.
  */
-function template_preprocess_views_view_unformatted(&$vars) {
-  $view = $vars['view'];
-  $rows = $vars['rows'];
+function template_preprocess_views_view_unformatted(&$variables) {
+  $view = $variables['view'];
+  $rows = $variables['rows'];
   $style = $view->style_plugin;
   $options = $style->options;
 
-  $vars['row_classes'] = array();
-  $vars['classes'] = array();
+  $variables['row_classes'] = array();
+  $variables['classes'] = array();
   $default_row_class = isset($options['default_row_class']) ? $options['default_row_class'] : FALSE;
   $row_class_special = isset($options['row_class_special']) ? $options['row_class_special'] : FALSE;
   // Set up striping values.
   $count = 0;
   $max = count($rows);
   foreach ($rows as $id => $row) {
-    $vars['row_classes'][$id] = array();
+    $variables['row_classes'][$id] = array();
     $count++;
     if ($default_row_class) {
-      $vars['row_classes'][$id]['class'][] = 'views-row';
-      $vars['row_classes'][$id]['class'][] = 'views-row-' . $count;
+      $variables['row_classes'][$id]['class'][] = 'views-row';
+      $variables['row_classes'][$id]['class'][] = 'views-row-' . $count;
     }
     if ($row_class_special) {
-      $vars['row_classes'][$id]['class'][] = 'views-row-' . ($count % 2 ? 'odd' : 'even');
+      $variables['row_classes'][$id]['class'][] = 'views-row-' . ($count % 2 ? 'odd' : 'even');
       if ($count == 1) {
-        $vars['row_classes'][$id]['class'][] = 'views-row-first';
+        $variables['row_classes'][$id]['class'][] = 'views-row-first';
       }
       if ($count == $max) {
-        $vars['row_classes'][$id]['class'][] = 'views-row-last';
+        $variables['row_classes'][$id]['class'][] = 'views-row-last';
       }
     }
 
     if ($row_class = $view->style_plugin->get_row_class($id)) {
-      $vars['row_classes'][$id]['class'][] = $row_class;
+      $variables['row_classes'][$id]['class'][] = $row_class;
     }
-    $vars['row_classes'][$id] = new Attribute($vars['row_classes'][$id]);
+    $variables['row_classes'][$id] = new Attribute($variables['row_classes'][$id]);
   }
 }
 
@@ -1148,7 +1155,7 @@ function theme_views_mini_pager($vars) {
  * example, arguments which provide a summary view might change the style to
  * one of the special summary styles.
  *
- * The default style for all views is views-view-unformatted.tpl.php
+ * The default style for all views is views-view-unformatted.html.twig
  *
  * Many styles will then farm out the actual display of each row to a row
  * style; the default row style is views-view-fields.tpl.php.
@@ -1163,10 +1170,10 @@ function theme_views_mini_pager($vars) {
  * - views-view--foobar.tpl.php
  * - views-view.html.twig
  *
- * - views-view-unformatted--foobar--page.tpl.php
- * - views-view-unformatted--page.tpl.php
- * - views-view-unformatted--foobar.tpl.php
- * - views-view-unformatted.tpl.php
+ * - views-view-unformatted--foobar--page.html.twig
+ * - views-view-unformatted--page.html.twig
+ * - views-view-unformatted--foobar.html.twig
+ * - views-view-unformatted.html.twig
  *
  * - views-view-fields--foobar--page.tpl.php
  * - views-view-fields--page.tpl.php
