@@ -3,6 +3,7 @@ description: 'This theme demonstrates Drupal''s default HTML markup and CSS styl
 package: Core
 version: VERSION
 core: 8.x
+engine: twig
 stylesheets:
   all:
     - css/layout.css
