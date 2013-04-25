@@ -63,8 +63,8 @@ class TableTest extends WebTestBase {
       ),
     );
     $this->content = theme('table', array('header' => $header, 'rows' => array(), 'empty' => t('No strings available.')));
-    $this->assertRaw('<tr class="odd"><td colspan="3" class="empty message">No strings available.</td>', 'Correct colspan was set on empty message.');
-    $this->assertRaw('<thead><tr><th>Header 1</th>', 'Table header was printed.');
+    $this->assertTrue($this->xpath('//tr[@class="odd"]/td[@colspan="3" and @class="empty message"]'), 'Correct colspan was set on empty message.');
+    $this->assertTrue($this->xpath('//thead/tr/th'), 'Table header was printed.');
   }
 
   /**
