@@ -1,0 +1,20 @@
+{#
+/**
+ * Default theme implementation for a toolbar tab wrapper.
+ *
+ * Toolbar tabs have a common styling and placement within the toolbar's bar
+ * area.
+ *
+ * Available variables:
+ * - children: The content of the toolbar tab.
+ * - attributes: HTML attributes to apply to the wrapper.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_toolbar_tab_wrapper()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if children %}
+  <div{{ attributes }}>{{ children }}</div>
+{% endif %}
