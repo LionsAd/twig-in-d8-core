@@ -2657,7 +2657,7 @@ function _form_options_flatten($array) {
 }
 
 /**
- * Processes a select list form element.
+ * Processes a select list element.
  *
  * This process callback is mandatory for select fields, since all user agents
  * automatically preselect the first available option of single (non-multiple)
@@ -2725,26 +2725,27 @@ function form_process_select($element) {
 }
 
 /**
- * Returns HTML for a select form element.
+ * Prepares variables for select element templates.
+ *
+ * Default template: select.html.twig.
  *
  * It is possible to group options together; to do this, change the format of
  * $options to an associative array in which the keys are group labels, and the
  * values are associative arrays in the normal $options format.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties of the element.
  *     Properties used: #title, #value, #options, #description, #extra,
  *     #multiple, #required, #name, #attributes, #size.
- *
- * @ingroup themeable
  */
-function theme_select($variables) {
+function template_preprocess_select(&$variables) {
   $element = $variables['element'];
   element_set_attributes($element, array('id', 'name', 'size'));
   _form_set_attributes($element, array('form-select'));
 
-  return '<select' . new Attribute($element['#attributes']) . '>' . form_select_options($element) . '</select>';
+  $variables['options'] = form_select_options($element);
+  $variables['attributes'] = new Attribute($element['#attributes']);
 }
 
 /**
@@ -2846,94 +2847,80 @@ function form_get_options($element, $key) {
 }
 
 /**
- * Returns HTML for a fieldset form element and its children.
+ * Prepares variables for fieldset element templates.
  *
- * @param $variables
+ * Default template: fieldset.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties of the element.
  *     Properties used: #attributes, #children, #collapsed, #description, #id,
  *     #title, #value.
- *
- * @ingroup themeable
  */
-function theme_fieldset($variables) {
+function template_preprocess_fieldset(&$variables) {
   $element = $variables['element'];
   element_set_attributes($element, array('id'));
   _form_set_attributes($element, array('form-wrapper'));
 
-  if (!empty($element['#description'])) {
-    $description_id = $element['#attributes']['id'] . '--description';
-    $element['#attributes']['aria-describedby'] = $description_id;
-  }
+  $variables['attributes'] = new Attribute($element['#attributes']);
 
-  $legend_attributes = array();
-  if (isset($element['#title_display']) && $element['#title_display'] == 'invisible') {
-    $legend_attributes['class'][] = 'element-invisible';
-  }
-
-  $output = '<fieldset' . new Attribute($element['#attributes']) . '>';
   if (!empty($element['#title'])) {
-    // Always wrap fieldset legends in a SPAN for CSS positioning.
-    $output .= '<legend' . new Attribute($legend_attributes) . '><span class="fieldset-legend">' . $element['#title'] . '</span></legend>';
-  }
-  $output .= '<div class="fieldset-wrapper">';
-  if (!empty($element['#description'])) {
-    $attributes = array('class' => 'fieldset-description', 'id' => $description_id);
-    $output .= '<div' . new Attribute($attributes) . '>' . $element['#description'] . '</div>';
-
-  }
-  $output .= $element['#children'];
-  if (isset($element['#value'])) {
-    $output .= $element['#value'];
-  }
-  $output .= '</div>';
-  $output .= "</fieldset>\n";
-  return $output;
-}
-
-/**
- * Returns HTML for a details form element and its children.
- *
- * @param $variables
- *   An associative array containing:
- *   - element: An associative array containing the properties of the element.
- *     Properties used: #attributes, #children, #collapsed, #description, #id,
- *     #title, #value.
- *
- * @ingroup themeable
- */
-function theme_details($variables) {
-  $element = $variables['element'];
-  element_set_attributes($element, array('id'));
-  _form_set_attributes($element, array('form-wrapper'));
-
-  $output = '<details' . new Attribute($element['#attributes']) . '>';
-  if (!empty($element['#title'])) {
-    $summary_attributes = new Attribute(array(
-      'role' => 'button',
-    ));
-    if (!empty($element['#attributes']['id'])) {
-      $summary_attributes['aria-controls'] = $element['#attributes']['id'];
+    $variables['title'] = $element['#title'];
+    $variables['title_attributes'] = new Attribute(array());
+    if (isset($element['#title_display']) && $element['#title_display'] == 'invisible') {
+      $variables['title_attributes']['class'] = array('element-invisible');
     }
-    $summary_attributes['aria-expanded'] = empty($element['#attributes']['open']) ? FALSE : TRUE;
-    $summary_attributes['aria-pressed'] = $summary_attributes['aria-expanded'];
-    $output .= '<summary' . $summary_attributes . '>' . $element['#title'] . '</summary>';
   }
-  $output .= '<div class="details-wrapper">';
+
   if (!empty($element['#description'])) {
-    $output .= '<div class="details-description">' . $element['#description'] . '</div>';
+    $variables['description'] = $element['#description'];
+    $description_id = $element['#attributes']['id'] . '--description';
+    $variables['description_attributes'] = new Attribute(array(
+      'id' => $description_id,
+      'class' => array('fieldset-description'),
+      'aria-describedby' => $description_id,
+    ));
   }
-  $output .= $element['#children'];
-  if (isset($element['#value'])) {
-    $output .= $element['#value'];
-  }
-  $output .= '</div>';
-  $output .= "</details>\n";
-  return $output;
+
+  $variables['children'] = $element['#children'];
+  $variables['value'] = (isset($element['#value'])) ? $element['#value'] : NULL;
 }
 
 /**
- * Prepares a #type 'radio' render element for theme_input().
+ * Prepares variables for details element templates.
+ *
+ * Default template: details.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - element: An associative array containing the properties of the element.
+ *     Properties used: #attributes, #children, #collapsed, #collapsible,
+ *     #description, #id, #title, #value.
+ *
+ * @ingroup themeable
+ */
+function template_preprocess_details(&$variables) {
+  $element = $variables['element'];
+
+  $variables['attributes'] = new Attribute($element['#attributes']);
+  $variables['summary_attributes'] = new Attribute(array());
+  if (!empty($element['#title'])) {
+    $variables['summary_attributes']['role'] = 'button';
+    if (!empty($element['#attributes']['id'])) {
+      $variables['summary_attributes']['aria-controls'] = $element['#attributes']['id'];
+    }
+    $variables['summary_attributes']['aria-expanded'] = empty($element['#attributes']['open']) ? FALSE : TRUE;
+    $variables['summary_attributes']['aria-pressed'] = $variables['summary_attributes']['aria-expanded'];
+  }
+
+  $variables['title'] = (!empty($element['#title'])) ? $element['#title'] : '';
+  $variables['description'] = (!empty($element['#description'])) ? $element['#description'] : '';
+  $variables['children'] = (isset($element['#children'])) ? $element['#children'] : '';
+  $variables['value'] = (isset($element['#value'])) ? $element['#value'] : '';
+}
+
+/**
+ * Adds form-specific attributes to a 'radio' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
@@ -2945,7 +2932,7 @@ function theme_details($variables) {
  *       all the attributes.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__radio'.
  */
 function form_pre_render_radio($element) {
   $element['#attributes']['type'] = 'radio';
@@ -2960,34 +2947,32 @@ function form_pre_render_radio($element) {
 }
 
 /**
- * Returns HTML for a set of radio button form elements.
+ * Prepares variables for radios templates.
  *
- * @param $variables
+ * Default template: radios.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties of the element.
- *     Properties used: #title, #value, #options, #description, #required,
- *     #attributes, #children.
- *
- * @ingroup themeable
+ *     Properties used: #attributes, #id, #children.
  */
-function theme_radios($variables) {
+function template_preprocess_radios(&$variables) {
   $element = $variables['element'];
-  $attributes = array();
+  $variables['attributes'] = new Attribute(array());
   if (isset($element['#id'])) {
-    $attributes['id'] = $element['#id'];
+    $variables['attributes']['id'] = $element['#id'];
   }
-  $attributes['class'] = 'form-radios';
-  if (!empty($element['#attributes']['class'])) {
-    $attributes['class'] .= ' ' . implode(' ', $element['#attributes']['class']);
-  }
+  $variables['attributes']['class'] = (!empty($element['#attributes']['class'])) ? $element['#attributes']['class'] : array();
+  $variables['attributes']['class'][] = 'form-radios';
   if (isset($element['#attributes']['title'])) {
-    $attributes['title'] = $element['#attributes']['title'];
+    $variables['attributes']['title'] = $element['#attributes']['title'];
   }
-  return '<div' . new Attribute($attributes) . '>' . (!empty($element['#children']) ? $element['#children'] : '') . '</div>';
+
+  $variables['children'] = !empty($element['#children']) ? $element['#children'] : '';
 }
 
 /**
- * Expand a password_confirm field into two text boxes.
+ * Expands a password_confirm field into two text boxes.
  */
 function form_process_password_confirm($element) {
   $element['pass1'] =  array(
@@ -3040,29 +3025,30 @@ function password_confirm_validate($element, &$element_state) {
 }
 
 /**
- * Returns HTML for an #date form element.
+ * Adds form-specific attributes to a 'date' #type element.
  *
  * Supports HTML5 types of 'date', 'datetime', 'datetime-local', and 'time'.
  * Falls back to a plain textfield. Used as a sub-element by the datetime
  * element type.
  *
- * @param array $variables
- *   An associative array containing:
- *   - element: An associative array containing the properties of the element.
- *     Properties used: #title, #value, #options, #description, #required,
- *     #attributes, #id, #name, #type, #min, #max, #step, #value, #size.
+ * @param array $element
+ *   An associative array containing the properties of the element.
+ *   Properties used: #title, #value, #options, #description, #required,
+ *   #attributes, #id, #name, #type, #min, #max, #step, #value, #size.
  *
- * @ingroup themeable
+ * Note: The input "name" attribute needs to be sanitized before output, which
+ *       is currently done by initializing Drupal\Core\Template\Attribute with
+ *       all the attributes.
+ *
+ * @return array
+ *   The $element with prepared variables ready for #theme 'input__date'.
  */
-function theme_date($variables) {
-  $element = $variables['element'];
-  if (empty($element['attribute']['type'])) {
-    $element['attribute']['type'] = 'date';
-  }
-  element_set_attributes($element, array('id', 'name', 'type', 'min', 'max', 'step', 'value', 'size'));
-  _form_set_attributes($element, array('form-' . $element['attribute']['type']));
+function form_pre_render_date($element) {
+  $element['#attributes']['type'] = 'date';
+  element_set_attributes($element, array('id', 'name', 'min', 'max', 'step', 'value', 'size'));
+  _form_set_attributes($element, array('form-date'));
 
-  return '<input' . new Attribute($element['#attributes']) . ' />';
+  return $element;
 }
 
 /**
@@ -3078,7 +3064,7 @@ function weight_value(&$form) {
 }
 
 /**
- * Expands a radios element into individual radio elements.
+ * Expands a #type 'radios' element into individual radio elements.
  */
 function form_process_radios($element) {
   if (count($element['#options']) > 0) {
@@ -3114,7 +3100,7 @@ function form_process_radios($element) {
 }
 
 /**
- * Prepares a #type 'checkbox' render element for theme_input().
+ * Adds form-specific attributes to a 'checkbox' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
@@ -3122,7 +3108,7 @@ function form_process_radios($element) {
  *   #attributes, #checked.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__checkbox'.
  */
 function form_pre_render_checkbox($element) {
   $element['#attributes']['type'] = 'checkbox';
@@ -3138,33 +3124,41 @@ function form_pre_render_checkbox($element) {
 }
 
 /**
- * Returns HTML for a set of checkbox form elements.
+ * Prepares variables for checkboxes templates.
  *
- * @param $variables
+ * Default template: checkboxes.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties of the element.
  *     Properties used: #children, #attributes.
- *
- * @ingroup themeable
  */
-function theme_checkboxes($variables) {
+function template_preprocess_checkboxes(&$variables) {
   $element = $variables['element'];
-  $attributes = array();
+
   if (isset($element['#id'])) {
-    $attributes['id'] = $element['#id'];
+    $variables['attributes']['id'] = $element['#id'];
   }
-  $attributes['class'][] = 'form-checkboxes';
+  $variables['attributes']['class'] = array();
+  $variables['attributes']['class'][] = 'form-checkboxes';
   if (!empty($element['#attributes']['class'])) {
-    $attributes['class'] = array_merge($attributes['class'], $element['#attributes']['class']);
+    if (is_array($element['#attributes']['class'])) {
+      foreach ($element['#attributes']['class'] as $class) {
+        $variables['attributes']['class'][] = $class;
+      }
+    }
+    else {
+      $variables['attributes']['class'][] = $element['#attributes']['class'];
+    }
   }
   if (isset($element['#attributes']['title'])) {
-    $attributes['title'] = $element['#attributes']['title'];
+    $variables['attributes']['title'] = $element['#attributes']['title'];
   }
-  return '<div' . new Attribute($attributes) . '>' . (!empty($element['#children']) ? $element['#children'] : '') . '</div>';
+  $variables['children'] = (!empty($element['#children'])) ? $element['#children'] : '';
 }
 
 /**
- * Adds form element theming to an element if its title or description is set.
+ * Adds form element themeing to an element if its title or description is set.
  *
  * This is used as a pre render function for checkboxes and radios.
  */
@@ -3398,20 +3392,18 @@ function form_process_container($element, &$form_state) {
 }
 
 /**
- * Returns HTML to wrap child elements in a container.
+ * Prepares variables for container templates.
  *
- * Used for grouped form items. Can also be used as a #theme_wrapper for any
- * renderable element, to surround it with a <div> and add attributes such as
- * classes or an HTML id.
+ * Default template: container.html.twig.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties of the element.
  *     Properties used: #id, #attributes, #children.
  *
  * @ingroup themeable
  */
-function theme_container($variables) {
+function template_preprocess_container(&$variables) {
   $element = $variables['element'];
 
   // Special handling for form elements.
@@ -3424,11 +3416,14 @@ function theme_container($variables) {
     $element['#attributes']['class'][] = 'form-wrapper';
   }
 
-  return '<div' . new Attribute($element['#attributes']) . '>' . $element['#children'] . '</div>';
+  $variables['children'] = $element['#children'];
+  $variables['attributes'] = new Attribute($element['#attributes']);
 }
 
 /**
- * Returns HTML for a table with radio buttons or checkboxes.
+ * Prepares a 'tableselect' #type element for rendering.
+ *
+ * Adds a column of radio buttons or checkboxes for each row of a table.
  *
  * @param $variables
  *   An associative array containing:
@@ -3466,11 +3461,8 @@ function theme_container($variables) {
  *       '#empty' => t('No content available.'),
  *     );
  *     @endcode
- *
- * @ingroup themeable
  */
-function theme_tableselect($variables) {
-  $element = $variables['element'];
+function form_pre_render_tableselect(array $element) {
   $rows = array();
   $header = $element['#header'];
   if (!empty($element['#options'])) {
@@ -3510,7 +3502,7 @@ function theme_tableselect($variables) {
     // checkboxes/radios in the first table column.
     if ($element['#js_select']) {
       // Add a "Select all" checkbox.
-      drupal_add_library('system', 'drupal.tableselect');
+      $element['#attached']['library'][] = array('system', 'drupal.tableselect');
       array_unshift($header, array('class' => array('select-all')));
     }
     else {
@@ -3519,7 +3511,10 @@ function theme_tableselect($variables) {
       array_unshift($header, '');
     }
   }
-  return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => $element['#empty'], 'attributes' => $element['#attributes']));
+  $element['#header'] = $header;
+  $element['#rows'] = $rows;
+
+  return $element;
 }
 
 /**
@@ -3900,7 +3895,7 @@ function form_process_group(&$element, &$form_state) {
 }
 
 /**
- * Adds form element theming to details.
+ * Adds form-specific attributes to a 'details' #type element.
  *
  * @param $element
  *   An associative array containing the properties and children of the
@@ -3910,11 +3905,13 @@ function form_process_group(&$element, &$form_state) {
  *   The modified element.
  */
 function form_pre_render_details($element) {
-  // The .form-wrapper class is required for #states to treat details like
-  // containers.
+  element_set_attributes($element, array('id'));
   if (!isset($element['#attributes']['class'])) {
     $element['#attributes']['class'] = array();
   }
+  // The .form-wrapper class is required for #states to treat details like
+  // containers.
+  _form_set_attributes($element, array('form-wrapper'));
 
   // Collapsible details.
   $element['#attached']['library'][] = array('system', 'drupal.collapse');
@@ -4048,18 +4045,20 @@ function form_pre_render_vertical_tabs($element) {
 }
 
 /**
- * Returns HTML for an element's children details as vertical tabs.
+ * Preapres an element's children details for vertical tabs templates.
  *
- * @param $variables
+ * Default template: vertical-tabs.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties and children of
  *     the details element. Properties used: #children.
- *
- * @ingroup themeable
  */
-function theme_vertical_tabs($variables) {
-  $element = $variables['element'];
-  return '<div class="vertical-tabs-panes">' . $element['#children'] . '</div>';
+function template_preprocess_vertical_tabs(&$variables) {
+  $variables['attributes'] = new Attribute(array(
+    'class' => 'vertical-tabs-panes'
+  ));
+  $variables['children'] = $variables['element']['#children'];
 }
 
 /**
@@ -4101,37 +4100,21 @@ function form_process_autocomplete($element, &$form_state) {
 }
 
 /**
- * Preprocesses variables for theme_input().
+ * Prepares variables for input templates.
+ *
+ * Default template: input.html.twig.
  *
  * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties of the element.
- *
- * @ingroup themeable
  */
 function template_preprocess_input(&$variables) {
-  $element = $variables['element'];
-  $variables['attributes'] = new Attribute($element['#attributes']);
+  $variables['attributes'] = new Attribute($variables['element']['#attributes']);
+  $variables['children'] = drupal_render_children($variables['element']);
 }
 
 /**
- * Returns HTML for an input form element.
- *
- * @param array $variables
- *   An associative array containing:
- *   - element: An associative array containing the properties of the element.
- *     Properties used: #attributes.
- *
- * @ingroup themeable
- */
-function theme_input($variables) {
-  $element = $variables['element'];
-  $attributes = $variables['attributes'];
-  return '<input' . $attributes . ' />' . drupal_render_children($element);
-}
-
-/**
- * Prepares a #type 'button' render element for theme_input().
+ * Adds form-specific attributes to a 'button' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
@@ -4141,7 +4124,7 @@ function theme_input($variables) {
  * styles the following button_types appropriately: 'primary', 'danger'.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__button'.
  */
 function form_pre_render_button($element) {
   $element['#attributes']['type'] = 'submit';
@@ -4162,7 +4145,7 @@ function form_pre_render_button($element) {
 }
 
 /**
- * Prepares a #type 'image_button' render element for theme_input().
+ * Adds form-specific attributes to an 'image_button' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
@@ -4172,7 +4155,7 @@ function form_pre_render_button($element) {
  * styles the following button_types appropriately: 'primary', 'danger'.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__image_button'.
  */
 function form_pre_render_image_button($element) {
   $element['#attributes']['type'] = 'image';
@@ -4199,14 +4182,14 @@ function form_pre_render_image_button($element) {
 }
 
 /**
- * Prepares a #type 'hidden' render element for theme_input().
+ * Adds form-specific attributes to a 'hidden' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
  *   Properties used: #name, #value, #attributes.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__hidden'.
  */
 function form_pre_render_hidden($element) {
   $element['#attributes']['type'] = 'hidden';
@@ -4216,7 +4199,7 @@ function form_pre_render_hidden($element) {
 }
 
 /**
- * Prepares a #type 'textfield' render element for theme_input().
+ * Adds form-specific attributes to a 'textfield' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
@@ -4224,7 +4207,7 @@ function form_pre_render_hidden($element) {
  *   #placeholder, #required, #attributes.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__textfield'.
  */
 function form_pre_render_textfield($element) {
   $element['#attributes']['type'] = 'text';
@@ -4235,7 +4218,7 @@ function form_pre_render_textfield($element) {
 }
 
 /**
- * Prepares a #type 'email' render element for theme_input().
+ * Adds form-specific attributes to an 'email' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
@@ -4243,7 +4226,7 @@ function form_pre_render_textfield($element) {
  *   #placeholder, #required, #attributes.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__email'.
  */
 function form_pre_render_email($element) {
   $element['#attributes']['type'] = 'email';
@@ -4268,7 +4251,7 @@ function form_validate_email(&$element, &$form_state) {
 }
 
 /**
- * Prepares a #type 'tel' render element for theme_input().
+ * Adds form-specific attributes to a 'tel' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
@@ -4276,7 +4259,7 @@ function form_validate_email(&$element, &$form_state) {
  *   #placeholder, #required, #attributes.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__tel'.
  */
 function form_pre_render_tel($element) {
   $element['#attributes']['type'] = 'tel';
@@ -4287,7 +4270,7 @@ function form_pre_render_tel($element) {
 }
 
 /**
- * Prepares a #type 'number' render element for theme_input().
+ * Adds form-specific attributes to a 'number' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
@@ -4295,7 +4278,7 @@ function form_pre_render_tel($element) {
  *   #required, #attributes, #step.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__number'.
  */
 function form_pre_render_number($element) {
   $element['#attributes']['type'] = 'number';
@@ -4306,7 +4289,7 @@ function form_pre_render_number($element) {
 }
 
 /**
- * Prepares a #type 'range' render element for theme_input().
+ * Adds form-specific attributes to a 'range' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
@@ -4314,7 +4297,7 @@ function form_pre_render_number($element) {
  *   #step.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__range'.
  */
 function form_pre_render_range($element) {
   $element['#attributes']['type'] = 'range';
@@ -4395,7 +4378,7 @@ function form_type_range_value($element, $input = FALSE) {
 }
 
 /**
- * Prepares a #type 'url' render element for theme_input().
+ * Adds form-specific attributes to a 'url' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
@@ -4403,7 +4386,7 @@ function form_type_range_value($element, $input = FALSE) {
  *   #placeholder, #required, #attributes.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__url'.
  */
 function form_pre_render_url($element) {
   $element['#attributes']['type'] = 'url';
@@ -4414,7 +4397,7 @@ function form_pre_render_url($element) {
 }
 
 /**
- * Prepares a #type 'search' render element for theme_input().
+ * Adds form-specific attributes to a 'search' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
@@ -4422,7 +4405,7 @@ function form_pre_render_url($element) {
  *   #placeholder, #required, #attributes.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__search'.
  */
 function form_pre_render_search($element) {
   $element['#attributes']['type'] = 'search';
@@ -4469,14 +4452,14 @@ function form_validate_color(&$element, &$form_state) {
 }
 
 /**
- * Prepares a #type 'color' render element for theme_input().
+ * Adds form-specific attriutes to a 'color' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
  *   Properties used: #title, #value, #description, #attributes.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__color'.
  */
 function form_pre_render_color($element) {
   $element['#attributes']['type'] = 'color';
@@ -4487,61 +4470,61 @@ function form_pre_render_color($element) {
 }
 
 /**
- * Returns HTML for a form.
+ * Prepares variables for form templates.
  *
- * @param $variables
+ * Default template: form.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties of the element.
  *     Properties used: #action, #method, #attributes, #children
  *
  * @ingroup themeable
  */
-function theme_form($variables) {
+function template_preprocess_form(&$variables) {
   $element = $variables['element'];
+  element_set_attributes($element, array('method', 'id'));
   if (isset($element['#action'])) {
     $element['#attributes']['action'] = drupal_strip_dangerous_protocols($element['#action']);
   }
-  element_set_attributes($element, array('method', 'id'));
   if (empty($element['#attributes']['accept-charset'])) {
     $element['#attributes']['accept-charset'] = "UTF-8";
   }
-  // Anonymous DIV to satisfy XHTML compliance.
-  return '<form' . new Attribute($element['#attributes']) . '><div>' . $element['#children'] . '</div></form>';
+  $variables['attributes'] = new Attribute($element['#attributes']);
+  $variables['children'] = $element['#children'];
 }
 
 /**
- * Returns HTML for a textarea form element.
+ * Prepares variables for textarea form element templates.
  *
- * @param $variables
+ * Default template: textarea.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties of the element.
  *     Properties used: #title, #value, #description, #rows, #cols,
  *     #placeholder, #required, #attributes, #resizable
- *
- * @ingroup themeable
  */
-function theme_textarea($variables) {
+function template_preprocess_textarea(&$variables) {
   $element = $variables['element'];
   element_set_attributes($element, array('id', 'name', 'rows', 'cols', 'placeholder'));
   _form_set_attributes($element, array('form-textarea'));
 
-  $wrapper_attributes = array(
+  $variables['wrapper_attributes'] = new Attribute(array(
     'class' => array('form-textarea-wrapper'),
-  );
+  ));
 
   // Add resizable behavior.
   if (!empty($element['#resizable'])) {
     $element['#attributes']['class'][] = 'resize-' . $element['#resizable'];
   }
 
-  $output = '<div' . new Attribute($wrapper_attributes) . '>';
-  $output .= '<textarea' . new Attribute($element['#attributes']) . '>' . check_plain($element['#value']) . '</textarea>';
-  $output .= '</div>';
-  return $output;
+  $variables['attributes'] = new Attribute($element['#attributes']);
+  $variables['value'] = check_plain($element['#value']);
 }
 
 /**
- * Prepares a #type 'password' render element for theme_input().
+ * Adds form-specific attributes to a 'password' #type element.
  *
  * @param array $element
  *   An associative array containing the properties of the element.
@@ -4549,7 +4532,7 @@ function theme_textarea($variables) {
  *   #placeholder, #required, #attributes.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__password'.
  */
 function form_pre_render_password($element) {
   $element['#attributes']['type'] = 'password';
@@ -4587,7 +4570,7 @@ function form_process_weight($element) {
 }
 
 /**
- * Prepares a #type 'file' render element for theme_input().
+ * Adds form-specific attributes to a 'file' #type element.
  *
  * For assistance with handling the uploaded file correctly, see the API
  * provided by file.inc.
@@ -4598,7 +4581,7 @@ function form_process_weight($element) {
  *   #attributes.
  *
  * @return array
- *   The $element with prepared variables ready for theme_input().
+ *   The $element with variables prepared for #theme 'input__file'.
  */
 function form_pre_render_file($element) {
   $element['#attributes']['type'] = 'file';
@@ -4620,7 +4603,9 @@ function form_process_file($element) {
 }
 
 /**
- * Returns HTML for a form element.
+ * Prepares variables for form element templates.
+ *
+ * Default template: form-element.html.twig.
  *
  * Each form element is wrapped in a DIV container having the following CSS
  * classes:
@@ -4657,107 +4642,82 @@ function form_process_file($element) {
  * but the parent element should have neither. Use this carefully because a
  * field without an associated label can cause accessibility challenges.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties of the element.
  *     Properties used: #title, #title_display, #description, #id, #required,
  *     #children, #type, #name.
- *
- * @ingroup themeable
  */
-function theme_form_element($variables) {
-  $element = &$variables['element'];
+function template_preprocess_form_element(&$variables) {
+  $element = $variables['element'];
 
   // This function is invoked as theme wrapper, but the rendered form element
   // may not necessarily have been processed by form_builder().
   $element += array(
     '#title_display' => 'before',
   );
-
-  // Take over any #wrapper_attributes defined by the element.
-  // @todo Temporary hack for #type 'item'.
-  // @see http://drupal.org/node/1829202
-  if (isset($element['#wrapper_attributes'])) {
-    $attributes = $element['#wrapper_attributes'];
-  }
-  // Add element #id for #type 'item'.
-  if (isset($element['#markup']) && !empty($element['#id'])) {
-    $attributes['id'] = $element['#id'];
-  }
-  // Add element's #type and #name as class to aid with JS/CSS selectors.
-  $attributes['class'][] = 'form-item';
-  if (!empty($element['#type'])) {
-    $attributes['class'][] = 'form-type-' . strtr($element['#type'], '_', '-');
-  }
-  if (!empty($element['#name'])) {
-    $attributes['class'][] = 'form-item-' . strtr($element['#name'], array(' ' => '-', '_' => '-', '[' => '-', ']' => ''));
-  }
-  // Add a class for disabled elements to facilitate cross-browser styling.
-  if (!empty($element['#attributes']['disabled'])) {
-    $attributes['class'][] = 'form-disabled';
-  }
-  $output = '<div' . new Attribute($attributes) . '>' . "\n";
-
   // If #title is not set, we don't display any label or required marker.
   if (!isset($element['#title'])) {
     $element['#title_display'] = 'none';
   }
-  $prefix = isset($element['#field_prefix']) ? '<span class="field-prefix">' . $element['#field_prefix'] . '</span> ' : '';
-  $suffix = isset($element['#field_suffix']) ? ' <span class="field-suffix">' . $element['#field_suffix'] . '</span>' : '';
-
-  switch ($element['#title_display']) {
-    case 'before':
-    case 'invisible':
-      $output .= ' ' . theme('form_element_label', $variables);
-      $output .= ' ' . $prefix . $element['#children'] . $suffix . "\n";
-      break;
-
-    case 'after':
-      $output .= ' ' . $prefix . $element['#children'] . $suffix;
-      $output .= ' ' . theme('form_element_label', $variables) . "\n";
-      break;
-
-    case 'none':
-    case 'attribute':
-      // Output no label and no required marker, only the children.
-      $output .= ' ' . $prefix . $element['#children'] . $suffix . "\n";
-      break;
+  // We call it a label, though.
+  $variables['label_display'] = $element['#title_display'];
+  // Label returns empty string in some cases.
+  $variables['label'] = array('#theme' => 'form_element_label', '#element' => $element);
+  // Take over any #wrapper_attributes defined by the element.
+  // @todo Temporary hack for #type 'item'.
+  // @see http://drupal.org/node/1829202
+  $variables['wrapper_attributes'] = new Attribute((isset($element['#wrapper_attributes'])) ? $element['#wrapper_attributes'] : array('class' => array()));
+  // Add element's #type and #name as class to aid with JS/CSS selectors.
+  $variables['wrapper_attributes']['class'][] = 'form-item';
+  if (!empty($element['#type'])) {
+    $variables['wrapper_attributes']['class'][] = 'form-type-' . strtr($element['#type'], '_', '-');
   }
-
-  if (!empty($element['#description'])) {
-    $attributes = array('class' => 'description');
+  if (!empty($element['#name'])) {
+    $variables['wrapper_attributes']['class'][] = 'form-item-' . strtr($element['#name'], array(' ' => '-', '_' => '-', '[' => '-', ']' => ''));
+  }
+  // Add a class for disabled elements to facilitate cross-browser styling.
+  if (!empty($element['#attributes']['disabled'])) {
+    $variables['wrapper_attributes']['class'][] = 'form-disabled';
+  }
+  // Add element #id for #type 'item'.
+  if (isset($element['#markup']) && !empty($element['#id'])) {
+    $variables['wrapper_attributes']['id'] = $element['#id'];
+  }
+  $variables['prefix'] = isset($element['#field_prefix']) ? $element['#field_prefix'] : '';
+  $variables['suffix'] = isset($element['#field_suffix']) ? $element['#field_suffix'] : '';
+  $variables['children'] = isset($element['#children']) ? $element['#children'] : NULL;
+  $variables['description'] = !empty($element['#description']) ? $element['#description'] : '';
+  if ($variables['description']) {
+    $variables['description_attributes'] = new Attribute(array('class' => 'description'));
     if (!empty($element['#id'])) {
-      $attributes['id'] = $element['#id'] . '--description';
+      $variables['description_attributes']['id'] = $element['#id'] . '--description';
     }
-    $output .= '<div' . new Attribute($attributes) . '>' . $element['#description'] . "</div>\n";
   }
-
-  $output .= "</div>\n";
-
-  return $output;
 }
 
 /**
- * Returns HTML for a marker for required form elements.
+ * Prepares variables for form element required marker templates.
  *
- * @param $variables
+ * Default template: form-element-required.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties of the element.
- *
- * @ingroup themeable
  */
-function theme_form_required_marker($variables) {
+function template_preprocess_form_required_marker(&$variables) {
   // This is also used in the installer, pre-database setup.
   $t = get_t();
-  $attributes = array(
+  $variables['attributes'] = new Attribute(array(
     'class' => 'form-required',
     'title' => $t('This field is required.'),
-  );
-  return '<abbr' . new Attribute($attributes) . '>*</abbr>';
+  ));
 }
 
 /**
- * Returns HTML for a form element label and required marker.
+ * Prepares variables for form element label templates.
+ *
+ * Default template: form-element-label.html.twig.
  *
  * Form element labels include the #title and a #required marker. The label is
  * associated with the element itself by the element #id. Labels may appear
@@ -4769,46 +4729,77 @@ function theme_form_required_marker($variables) {
  * this function will output no label (''). For required elements that have an
  * empty #title, this will output the required marker alone within the label.
  * The label will use the #id to associate the marker with the field that is
- * required. That is especially important for screenreader users to know
- * which field is required.
+ * required. That is especially important for screenreader users to know which
+ * field is required.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties of the element.
  *     Properties used: #required, #title, #id, #value, #description.
- *
- * @ingroup themeable
  */
-function theme_form_element_label($variables) {
-  $element = $variables['element'];
+function template_preprocess_form_element_label(&$variables) {
+  // @todo: Figure out how to do this differently (calling from form_element).
+  $element = $variables['element']['#element'];
   // This is also used in the installer, pre-database setup.
   $t = get_t();
 
-  // If title and required marker are both empty, output no label.
-  if ((!isset($element['#title']) || $element['#title'] === '') && empty($element['#required'])) {
-    return '';
+  // If title and required marker are both empty, prepare no label.
+  if (empty($element['#required']) && (!isset($element['#title']) || $element['#title'] === '')) {
+    $variables['label'] = $variables['required'] = $variables['attributes'] = NULL;
+  }
+  else {
+    // If the element is required, a required marker is appended to the label.
+    $variables['label'] = (isset($element['#title'])) ? filter_xss_admin($element['#title']) : NULL;
+    $variables['required'] = (!empty($element['#required'])) ? array('#theme' => 'form_required_marker', '#element' => $element) : '';
+    $variables['attributes'] = new Attribute(array());
+    // Associate the label with the field it is for.
+    if (!empty($element['#id'])) {
+      $variables['attributes']['for'] = $element['#id'];
+    }
+    // Add label positioning classes.
+    if (!empty($element['#title_display'])) {
+      $variables['attributes']['class'] = array();
+      // Style the label as class 'option' to display inline with the element.
+      // @todo: Use a more semantic class name like 'layout-inline-after'?
+      if ($element['#title_display'] == 'after') {
+        $variables['attributes']['class'][] = 'option';
+      }
+      // Show label only to screen readers to avoid disruption in visual flows.
+      elseif ($element['#title_display'] == 'invisible') {
+        $variables['attributes']['class'][] = 'element-invisible';
+      }
+    }
+  }
+}
+
+/**
+ * Prepares variables for exposed filters templates.
+ *
+ * Default template: exposed-filters.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - form: An associative array containing the structure of the form.
+ */
+function template_preprocess_exposed_filters(&$variables) {
+  $form = $variables['form'];
+
+  $variables['items'] = array();
+  if (isset($form['current'])) {
+    $items = array();
+    foreach (element_children($form['current']) as $key) {
+      $items[] = $form['current'][$key];
+    }
+    $variables['items'][] = array(
+      '#theme' => 'item_list',
+      '#items' => $items,
+      '#attributes' => array(
+        'class' => array('clearfix', 'current-filters'),
+      ),
+    );
   }
 
-  // If the element is required, a required marker is appended to the label.
-  $required = !empty($element['#required']) ? theme('form_required_marker', array('element' => $element)) : '';
-
-  $title = filter_xss_admin($element['#title']);
-
-  $attributes = array();
-  // Style the label as class option to display inline with the element.
-  if ($element['#title_display'] == 'after') {
-    $attributes['class'] = 'option';
-  }
-  // Show label only to screen readers to avoid disruption in visual flows.
-  elseif ($element['#title_display'] == 'invisible') {
-    $attributes['class'] = 'element-invisible';
-  }
-
-  if (!empty($element['#id'])) {
-    $attributes['for'] = $element['#id'];
-  }
-
-  return '<label' . new Attribute($attributes) . '>' . $t('!title!required', array('!title' => $title, '!required' => $required)) . '</label>';
+  $variables['form'] = drupal_render_children($form);
 }
 
 /**
