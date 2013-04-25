@@ -319,28 +319,17 @@ function template_preprocess_views_view_grouping(&$vars) {
 }
 
 /**
- * Display a single views field.
+ * Prepares variables for views field templates.
  *
- * Interesting bits of info:
- * $field->field_alias says what the raw value in $row will be. Reach it like
- * this: @code { $row->{$field->field_alias} @endcode
- */
-function theme_views_view_field($vars) {
-  $view = $vars['view'];
-  $field = $vars['field'];
-  $row = $vars['row'];
-  return $vars['output'];
-}
-
-/**
- * Process a single field within a view.
+ * Default template: views-view-field.html.twig.
  *
- * This preprocess function isn't normally run, as a function is used by
- * default, for performance. However, by creating a template, this
- * preprocess should get picked up.
+ * @param array $variables
+ *   An associative array containing:
+ *   - field: @todo.
+ *   - row: @todo.
  */
-function template_preprocess_views_view_field(&$vars) {
-  $vars['output'] = $vars['field']->advanced_render($vars['row']);
+function template_preprocess_views_view_field(&$variables) {
+  $variables['output'] = $variables['field']->advanced_render($variables['row']);
 }
 
 /**
