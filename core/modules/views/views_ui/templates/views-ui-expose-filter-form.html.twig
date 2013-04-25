@@ -1,0 +1,59 @@
+{#
+/**
+ * @file
+ * Default theme implementation for expose filter form.
+ *
+ * Available variables:
+ * - form_description: The filter's description.
+ * - expose_button: The button to toggle the expose filter form.
+ * - group_button: @todo.
+ * - required: A checkbox to require this filter or not.
+ * - label: A filter label input field.
+ * - description: A filter description field.
+ * - operator: @todo.
+ * - value: @todo.
+ * - use_operator: @todo.
+ * - has_left_column: @todo.
+ * - children: Child elements of the form that still need to be printed.
+ * - more: @todo.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_views_ui_expose_filter_form()
+ *
+ * @ingroup themeable
+ */
+#}
+{{ form_description }}
+{{ expose_button }}
+{{ group_button }}
+
+{% if required %}
+  {{ required }}
+{% endif %}
+
+{{ label }}
+{{ description }}
+
+{% if operator %}
+  {{ operator }}
+{% endif %}
+
+{% if value %}
+  {{ value }}
+{% endif %}
+
+{% if use_operator %}
+  <div class="views-left-40">
+    {{ use_operator }}
+  </div>
+{% endif %}
+
+{% if has_left_column %}
+  <div class="views-right-60">
+    {{ children }}
+  </div>
+{% else %}
+  {{ children }}
+{% endif %}
+
+{{ more }}
