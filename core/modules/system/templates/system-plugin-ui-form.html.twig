@@ -1,5 +1,4 @@
-<?php
-
+{#
 /**
  * @file
  * Default theme implementation to configure blocks.
@@ -14,19 +13,19 @@
  *
  * @ingroup themeable
  */
-?>
+#}
 <div id="block-library" class="container">
   <div class="left-col">
     <div class="inside">
-      <?php print $left; ?>
+      {{ left }}
     </div>
   </div>
   <div class="right-col">
     <div class="inside">
-      <?php print $right; ?>
+      {{ right }}
     </div>
   </div>
-  <?php if ($form_submit) { ?>
-  <div class="bottom-bar"><?php print $form_submit; ?></div>
-  <?php } ?>
+  {% if form_submit %}
+  <div class="bottom-bar">{{ form_submit }}</div>
+  {% endif %}
 </div>
