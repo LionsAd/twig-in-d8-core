@@ -1,0 +1,35 @@
+{#
+/**
+ * @file
+ * Default theme implementation for Views UI rearrange filter form.
+ *
+ * Available variables:
+ * - override: @todo.
+ * - grouping: A flag whether or not there is more than one group.
+ * - filter_groups_operator: @todo.
+ * - filter_groups_group: @todo.
+ * - ungroupable_table: @todo.
+ * - table: Filter's form table.
+ * - children: Child elements of the form that still need to be printed.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_views_ui_rearrange_filter_form()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if override %}
+  {{ override }}
+{% endif %}
+<div class="scroll">
+  {% if grouping %}
+    {{ filter_groups_operator }}
+  {% else %}
+    {{ filter_groups_group }}
+  {% endif %}
+  {% if ungroupable_table %}
+    {{ ungroupable_table }}
+  {% endif %}
+  {{ table }}
+</div>
+{{ children }}
