@@ -1640,44 +1640,22 @@ function theme_datetime($variables) {
 }
 
 /**
- * Returns HTML for status and/or error messages, grouped by type.
+ * Prepares variables for status message templates.
  *
- * An invisible heading identifies the messages for assistive technology.
- * Sighted users see a colored box. See http://www.w3.org/TR/WCAG-TECHS/H69.html
- * for info.
+ * Default template: status-messages.html.twig.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
- *   - display: (optional) Set to 'status' or 'error' to display only messages
- *     of that type.
+ *   - display: (optional) Set to e.g. 'status' or 'error' to display only
+ *     messages of that type.
  */
-function theme_status_messages($variables) {
-  $display = $variables['display'];
-  $output = '';
-
-  $status_heading = array(
+function template_preprocess_status_messages(&$variables) {
+  $variables['messages_display'] = drupal_get_messages($variables['display']);
+  $variables['status_headings'] = array(
     'status' => t('Status message'),
     'error' => t('Error message'),
     'warning' => t('Warning message'),
   );
-  foreach (drupal_get_messages($display) as $type => $messages) {
-    $output .= "<div class=\"messages $type\">\n";
-    if (!empty($status_heading[$type])) {
-      $output .= '<h2 class="element-invisible">' . $status_heading[$type] . "</h2>\n";
-    }
-    if (count($messages) > 1) {
-      $output .= " <ul>\n";
-      foreach ($messages as $message) {
-        $output .= '  <li>' . $message . "</li>\n";
-      }
-      $output .= " </ul>\n";
-    }
-    else {
-      $output .= $messages[0];
-    }
-    $output .= "</div>\n";
-  }
-  return $output;
 }
 
 /**
@@ -3149,6 +3127,7 @@ function drupal_common_theme() {
     ),
     'status_messages' => array(
       'variables' => array('display' => NULL),
+      'template' => 'status-messages',
     ),
     'link' => array(
       'variables' => array('text' => NULL, 'path' => NULL, 'options' => array()),
