@@ -2600,21 +2600,6 @@ function template_preprocess_meter(&$variables) {
 }
 
 /**
- * Returns HTML for an indentation div; used for drag and drop tables.
- *
- * @param $variables
- *   An associative array containing:
- *   - size: Optional. The number of indentations to create.
- */
-function theme_indentation($variables) {
-  $output = '';
-  for ($n = 0; $n < $variables['size']; $n++) {
-    $output .= '<div class="indentation">&nbsp;</div>';
-  }
-  return $output;
-}
-
-/**
  * @} End of "addtogroup themeable".
  */
 
@@ -3228,6 +3213,7 @@ function drupal_common_theme() {
     ),
     'indentation' => array(
       'variables' => array('size' => 1),
+      'template' => 'indentation',
     ),
     'html_tag' => array(
       'render element' => 'element',
