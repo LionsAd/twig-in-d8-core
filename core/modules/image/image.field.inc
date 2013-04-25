@@ -7,6 +7,7 @@
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Template\Attribute;
 
 /**
  * Implements hook_field_info().
@@ -418,39 +419,35 @@ function _image_field_required_fields_validate($element, &$form_state) {
 }
 
 /**
- * Returns HTML for an image field widget.
+ * Prepare variables for image widget templates.
+ *
+ * Default template: image-widget.html.twig.
  *
  * @param array $variables
  *   An associative array containing:
- *   - element: A render element representing the image field widget.
- *
- * @ingroup themeable
+ *   - element: An render element representing the image field widget.
  */
-function theme_image_widget($variables) {
+function template_preprocess_image_widget(&$variables) {
   $element = $variables['element'];
-  $output = '';
-  $output .= '<div class="image-widget form-managed-file clearfix">';
+  $element['#attributes']['class'] = array('image-widget', 'form-managed-file', 'clearfix');
 
   if (isset($element['preview'])) {
-    $output .= '<div class="image-preview">';
-    $output .= drupal_render($element['preview']);
-    $output .= '</div>';
+    $variables['preview'] = $element['preview'];
   }
 
-  $output .= '<div class="image-widget-data">';
   if (!empty($element['fids']['#value'])) {
     $file = reset($element['#files']);
-    $element['file_' . $file->fid]['filename']['#markup'] .= ' <span class="file-size">(' . format_size($file->filesize) . ')</span> ';
+    $element['file_' . $file->fid]['filename']['#markup'] .= '<span class="file-size">(' . format_size($file->filesize) . ')</span>';
   }
-  $output .= drupal_render_children($element);
-  $output .= '</div>';
-  $output .= '</div>';
 
-  return $output;
+  $variables['data'] = drupal_render_children($element);
+  $variables['attributes'] = new Attribute($element['#attributes']);
 }
 
 /**
- * Returns HTML for an image field formatter.
+ * Prepares variables for image formatter templates.
+ *
+ * Default template: image-formatter.html.twig.
  *
  * @param array $variables
  *   An associative array containing:
@@ -459,8 +456,11 @@ function theme_image_widget($variables) {
  *   - path: An optional array containing the link 'path' and link 'options'.
  *
  * @ingroup themeable
+ *
+ * @todo Refactor this to remove theme() call when theme_image() is converted.
+ *   http://drupal.org/node/1939068
  */
-function theme_image_formatter($variables) {
+function template_preprocess_image_formatter(&$variables) {
   $item = $variables['item'];
 
   // Do not output an empty 'title' attribute.
@@ -468,12 +468,34 @@ function theme_image_formatter($variables) {
     unset($item['title']);
   }
 
-  if ($variables['image_style']) {
-    $item['style_name'] = $variables['image_style'];
-    $output = theme('image_style', $item);
+  if (!empty($variables['image_style'])) {
+    // Build a render array for the image from the formatter item.
+    $image = array(
+      '#theme' => 'image_style',
+      '#style_name' => $variables['image_style'],
+    );
+    if(isset($item['uri'])) {
+      $image['#uri'] = $item['uri'];
+    }
+    if(isset($item['width'])) {
+      $image['#width'] = $item['width'];
+    }
+    if(isset($item['height'])) {
+      $image['#height'] = $item['height'];
+    }
+    if(isset($item['alt'])) {
+      $image['#alt'] = $item['alt'];
+    }
+    if(isset($item['title'])) {
+      $image['#title'] = $item['title'];
+    }
+    if(isset($item['attributes'])) {
+      $image['#attributes'] = $item['attributes'];
+    }
+    $variables['image'] = $image;
   }
   else {
-    $output = theme('image', $item);
+    $variables['image'] = theme('image', $item);
   }
 
   // The link path and link options are both optional, but for the options to be
@@ -483,8 +505,6 @@ function theme_image_formatter($variables) {
     $options = isset($variables['path']['options']) ? $variables['path']['options'] : array();
     // When displaying an image inside a link, the html option must be TRUE.
     $options['html'] = TRUE;
-    $output = l($output, $path, $options);
+    $variables['url'] = url($path, $options);
   }
-
-  return $output;
 }
