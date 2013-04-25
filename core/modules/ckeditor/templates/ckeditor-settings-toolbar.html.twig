@@ -1,0 +1,57 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the CKEditor settings toolbar.
+ *
+ * Available variables:
+ * - multiple_buttons: A list of buttons that may be added multiple times.
+ * - disabled_buttons: A list of disabled buttons.
+ * - active_buttons: A list of active button rows.
+ *
+ * @see theme_preprocess()
+ * @see theme_preprocess_ckeditor_settings_toolbar()
+ *
+ * @ingroup themeable
+ */
+#}
+{% spaceless %}
+  <fieldset role="form" id="ckeditor-button-configuration-container" aria-labelledby="ckeditor-button-configuration ckeditor-button-description">
+    <legend id="ckeditor-button-configuration">{{ 'Toolbar configuration'|t }}</legend>
+    <div class="fieldset-wrapper">
+      <div id="ckeditor-button-configuration-aria-live" class="element-invisible" aria-live="polite"></div>
+      <div id="ckeditor-button-description" class="fieldset-description">{{ 'Move a button into the <em>Active toolbar</em> to enable it, or into the list of <em>Available buttons</em> to disable it. Use dividers to create button groups. Buttons may be moved with the mouse or keyboard arrow keys.'|t }}</div>
+      <div class="ckeditor-toolbar-disabled clearfix">
+        <div class="ckeditor-toolbar-dividers">
+          <label id="ckeditor-multiple-label">{{ 'Dividers'|t }}</label>
+          <ul class="ckeditor-multiple-buttons" role="form" aria-labelledby="ckeditor-multiple-label">
+            {% for multiple_button in multiple_buttons %}
+              <li{{ multiple_button.attributes }}>{{ multiple_button.value }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <label id="ckeditor-available-buttons">{{ 'Available buttons'|t }}</label>
+        <ul class="ckeditor-buttons" role="form" aria-labelledby="ckeditor-available-buttons">
+          {% for disabled_button in disabled_buttons %}
+             <li{{ disabled_button.attributes }}>{{ disabled_button.value }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <label id="ckeditor-active-toolbar">{{ 'Active toolbar'|t }}</label>
+      <div data-toolbar="active" class="ckeditor-toolbar-active clearfix">
+        {% for button_row in active_buttons %}
+          <ul class="ckeditor-buttons" role="form" aria-labelledby="ckeditor-active-toolbar">
+            {% for active_button in button_row %}
+              <li{{ active_button.attributes }}>{{ active_button.value }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <ul class="ckeditor-buttons"></ul>
+        {% endfor %}
+        <div class="ckeditor-row-controls">
+          <a href="#" role="button" aria-label="{{ 'Remove last button row'|t }}" class="ckeditor-row-remove" title="{{ 'Remove row'|t }}">-</a>
+          <a href="#" role="button" aria-label="{{ 'Add additional button row'|t }}" class="ckeditor-row-add" title="{{ 'Add row'|t }}">+</a>
+        </div>
+      </div>
+    </div>
+  </fieldset>
+{% endspaceless %}

@@ -200,7 +200,6 @@ Drupal.behaviors.ckeditorAdmin = {
     if ($ckeditorToolbar.length) {
       var $textareaWrapper = $ckeditorToolbar.find('.form-item-editor-settings-toolbar-buttons').hide();
       var $textarea = $textareaWrapper.find('textarea');
-      var $toolbarAdmin = $(drupalSettings.ckeditor.toolbarAdmin);
       var sortableSettings = {
         connectWith: '.ckeditor-buttons',
         placeholder: 'ckeditor-button-placeholder',
@@ -210,7 +209,8 @@ Drupal.behaviors.ckeditorAdmin = {
         stop: adminToolbarValue
       };
       // Add the toolbar to the page.
-      $toolbarAdmin.insertAfter($textareaWrapper);
+      $textareaWrapper.after(drupalSettings.ckeditor.toolbarAdmin);
+      var $toolbarAdmin = $('#ckeditor-button-configuration-container');
 
       // Then determine if this is RTL or not.
       var rtl = $toolbarAdmin.css('direction') === 'rtl' ? -1 : 1;
