@@ -232,7 +232,16 @@ function views_ui_cache_set(ViewUI $view) {
 }
 
 /**
- * Theme preprocess for views-view.tpl.php.
+ * Implements hook_preprocess_views_view().
+ *
+ * Prepares variables for container templates.
+ *
+ * Default template: views-view.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: The view object.
+ *   - directory: The location of The views module.
  */
 function views_ui_preprocess_views_view(&$vars) {
   $view = $vars['view'];
@@ -244,11 +253,11 @@ function views_ui_preprocess_views_view(&$vars) {
           '#theme' => 'views_ui_view_preview_section',
           '#view' => $view,
           '#section' => $section,
-          '#content' => is_array($vars[$section]) ? drupal_render($vars[$section]) : $vars[$section],
+          '#content' => $vars[$section],
           '#theme_wrappers' => array('views_ui_container'),
           '#attributes' => array('class' => 'contextual-region'),
         );
-        $vars[$section] = drupal_render($vars[$section]);
+        $vars[$section] = $vars[$section];
       }
     }
   }
@@ -310,7 +319,7 @@ function views_ui_view_preview_section_display_category_links(ViewExecutable $vi
 }
 
 /**
- * Returns all contextual links for the main content part of the view.
+ * Returns all contextual links for the main content part of the View.
  */
 function views_ui_view_preview_section_rows_links(ViewExecutable $view) {
   $display = $view->display_handler->display;
@@ -330,7 +339,7 @@ function views_ui_view_preview_section_rows_links(ViewExecutable $view) {
 function views_ui_views_plugins_display_alter(&$plugins) {
   // Attach contextual links to each display plugin. The links will point to
   // paths underneath "admin/structure/views/view/{$view->id()}" (i.e., paths
-  // for editing and performing other contextual actions on the view).
+  // for editing and performing other contextual actions on the View).
   foreach ($plugins as &$display) {
     $display['contextual links']['views_ui'] = array(
       'parent path' => 'admin/structure/views/view',
