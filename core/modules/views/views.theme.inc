@@ -344,12 +344,19 @@ function template_preprocess_views_view_field(&$vars) {
 }
 
 /**
- * Preprocess theme function to print a single record from a row, with fields
+ * Prepares variables for Views summary templates.
+ *
+ * The summary prints a single record from a row, with fields.
+ *
+ * Default template: views-view-summary.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: The View object.
  */
-function template_preprocess_views_view_summary(&$vars) {
-  $view     = $vars['view'];
+function template_preprocess_views_view_summary(&$variables) {
+  $view = $variables['view'];
   $argument = $view->argument[$view->build_info['summary_level']];
-  $vars['row_classes'] = array();
 
   $url_options = array();
 
@@ -366,14 +373,13 @@ function template_preprocess_views_view_summary(&$vars) {
   // This is not done per single argument value, because this could cause performance problems.
   $row_args = array();
 
-  foreach ($vars['rows'] as $id => $row) {
+  foreach ($variables['rows'] as $id => $row) {
     $row_args[$id] = $argument->summary_argument($row);
   }
   $argument->process_summary_arguments($row_args);
 
-  foreach ($vars['rows'] as $id => $row) {
-
-    $vars['rows'][$id]->link = $argument->summary_name($row);
+  foreach ($variables['rows'] as $id => $row) {
+    $variables['rows'][$id]->link = $argument->summary_name($row);
     $args = $view->args;
     $args[$argument->position] = $row_args[$id];
 
@@ -381,14 +387,13 @@ function template_preprocess_views_view_summary(&$vars) {
     if (!empty($argument->options['summary_options']['base_path'])) {
       $base_path = $argument->options['summary_options']['base_path'];
     }
-    $vars['rows'][$id]->url = url($view->getUrl($args, $base_path), $url_options);
-    $vars['rows'][$id]->count = intval($row->{$argument->count_alias});
-
-    $vars['row_classes'][$id] = array();
-    if (isset($active_urls[$vars['rows'][$id]->url])) {
-      $vars['row_classes'][$id]['class'][] = 'active';
+    $variables['rows'][$id]->url = url($view->getUrl($args, $base_path), $url_options);
+    $variables['rows'][$id]->count = intval($row->{$argument->count_alias});
+    $attributes = array();
+    if (isset($active_urls[$variables['rows'][$id]->url])) {
+      $attributes['class'][] = 'active';
     }
-    $vars['row_classes'][$id] = new Attribute($vars['row_classes'][$id]);
+    $variables['rows'][$id]->attributes = new Attribute($attributes);
   }
 }
 
