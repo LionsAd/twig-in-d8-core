@@ -3269,51 +3269,59 @@ function drupal_common_theme() {
     // From form.inc.
     'input' => array(
       'render element' => 'element',
+      'template' => 'input',
     ),
     'select' => array(
       'render element' => 'element',
+      'template' => 'select',
     ),
     'fieldset' => array(
       'render element' => 'element',
+      'template' => 'fieldset',
     ),
     'details' => array(
       'render element' => 'element',
+      'template' => 'details',
     ),
     'radios' => array(
       'render element' => 'element',
-    ),
-    'date' => array(
-      'render element' => 'element',
+      'template' => 'radios',
     ),
     'exposed_filters' => array(
       'render element' => 'form',
+      'template' => 'exposed-filters',
     ),
     'checkboxes' => array(
       'render element' => 'element',
+      'template' => 'checkboxes',
     ),
     'form' => array(
       'render element' => 'element',
+      'template' => 'form',
     ),
     'textarea' => array(
       'render element' => 'element',
-    ),
-    'tableselect' => array(
-      'render element' => 'element',
+      'template' => 'textarea',
     ),
     'form_element' => array(
       'render element' => 'element',
+      'template' => 'form-element',
     ),
     'form_required_marker' => array(
       'render element' => 'element',
+      'template' => 'form-required-marker',
     ),
     'form_element_label' => array(
       'render element' => 'element',
+      'template' => 'form-element-label',
     ),
     'vertical_tabs' => array(
       'render element' => 'element',
+      'template' => 'vertical-tabs',
     ),
     'container' => array(
       'render element' => 'element',
+      'template' => 'container',
     ),
   );
 }
