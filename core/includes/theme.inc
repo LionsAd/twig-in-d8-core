@@ -2280,23 +2280,20 @@ function theme_tablesort_indicator($variables) {
 }
 
 /**
- * Returns HTML for a marker for new or updated content.
+ * Prepares variables for mark templates.
  *
- * @param $variables
+ * Default template: mark.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - type: Number representing the marker type to display. See MARK_NEW,
  *     MARK_UPDATED, MARK_READ.
  */
-function theme_mark($variables) {
-  $type = $variables['type'];
+function template_preprocess_mark(&$variables) {
   global $user;
+  $variables['logged_in'] = FALSE;
   if ($user->uid) {
-    if ($type == MARK_NEW) {
-      return ' <span class="marker">' . t('new') . '</span>';
-    }
-    elseif ($type == MARK_UPDATED) {
-      return ' <span class="marker">' . t('updated') . '</span>';
-    }
+    $variables['logged_in'] = TRUE;
   }
 }
 
@@ -3188,6 +3185,7 @@ function drupal_common_theme() {
     ),
     'mark' => array(
       'variables' => array('type' => MARK_NEW),
+      'template' => 'mark',
     ),
     'item_list' => array(
       'variables' => array('items' => array(), 'title' => '', 'type' => 'ul', 'attributes' => array()),
