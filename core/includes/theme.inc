@@ -1851,10 +1851,12 @@ function theme_dropbutton_wrapper($variables) {
 }
 
 /**
- * Returns HTML for an image.
+ * Prepares variables for image templates.
  *
- * @param $variables
- *   An associative array containing:
+ * Default template: image.html.twig.
+ *
+ * @param array $variables
+ *   Available variables:
  *   - uri: Either the path of the image file (relative to base_path()) or a
  *     full URL.
  *   - width: The width of the image (if known).
@@ -1873,7 +1875,7 @@ function theme_dropbutton_wrapper($variables) {
  *     popular browsers.
  *   - attributes: Associative array of attributes to be placed in the img tag.
  */
-function theme_image($variables) {
+function template_preprocess_image(&$variables) {
   $attributes = $variables['attributes'];
   $attributes['src'] = file_create_url($variables['uri']);
 
@@ -1882,8 +1884,12 @@ function theme_image($variables) {
       $attributes[$key] = $variables[$key];
     }
   }
+  // Remove 'image' from the class array. This is added through
+  // template_preprocess() but we do not need it.
+  // @todo Remove after http://drupal.org/node/1938430 is resolved.
+  $attributes['class'] = array_diff($attributes['class'], array('image'));
 
-  return '<img' . new Attribute($attributes) . ' />';
+  $variables['attributes'] = new Attribute($attributes);
 }
 
 /**
@@ -3173,6 +3179,7 @@ function drupal_common_theme() {
       // The title attribute is optional in all cases, so it is omitted by
       // default.
       'variables' => array('uri' => NULL, 'width' => NULL, 'height' => NULL, 'alt' => '', 'title' => NULL, 'attributes' => array()),
+      'template' => 'image',
     ),
     'breadcrumb' => array(
       'variables' => array('breadcrumb' => NULL),
