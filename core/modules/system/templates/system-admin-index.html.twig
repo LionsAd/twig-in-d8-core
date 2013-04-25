@@ -1,0 +1,26 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the admin index page.
+ *
+ * Available variables:
+ * - system_compact_link: Themed link to toggle compact view.
+ * - container: Container for admin blocks.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_system_admin_index()
+ *
+ * @ingroup themeable
+ */
+ @todo: remove this file once http://drupal.org/node/1842232 is resolved.
+#}
+<div class="admin clearfix">
+  {{ system_compact_link }}
+  {% for position, container in containers %}
+    <div class="{{ position }} clearfix">
+      {% for i in container.blocks|keys %}
+        {{ container.blocks[i] }}
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>

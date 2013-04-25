@@ -1,0 +1,58 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the Appearance page.
+ *
+ * Available variables:
+ * - attributes: HTML element attributes.
+ * - theme_groups: An array of theme groups.
+ *
+ * Each theme_groups[group] contains an array of theme groups.
+ *
+ * Each group in theme_groups[group] contains:
+ * - group.attributes: Element attributes specific to this group.
+ * - group.title: Title for the theme group.
+ * - group.state: State of the theme group.
+ * - group.themes: An array of themes within that group.
+ *
+ * Each group.themes[theme] contains an array of themes.
+ *
+ * Each theme in group.themes[theme] contains:
+ * - theme.attributes: Element attributes specific to this theme.
+ * - theme.screenshot: Render of theme screenshot.
+ * - theme.description: Description of the theme.
+ * - theme.name: Name of theme.
+ * - theme.version: Verions number of theme.
+ * - theme.notes: Identifies what context this theme is being used.
+ *   eg. (default theme, admin theme)
+ * - theme.compatibility: Description of any incompatibility issues,
+ *   if the theme is compatible, provides a list of links.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_system_themes_page()
+ *
+ * @ingroup themeable
+ */
+#}
+<div{{ attributes }}>
+  {% for group_key in theme_groups|keys %}
+    <div class="{{ theme_groups[group_key].attributes.class }}"{{ theme_groups[group_key].attributes }}>
+      <h2>{{ theme_groups[group_key].title }}</h2>
+      {% for theme_key in theme_groups[group_key].themes|keys %}
+        <div class="{{ theme_groups[group_key].themes[theme_key].attributes.class }}"{{ theme_groups[group_key].themes[theme_key].attributes }}>
+          {% if theme_groups[group_key].themes[theme_key].screenshot %}
+            {{ theme_groups[group_key].themes[theme_key].screenshot }}
+          {% else %}
+            <div class="no-screenshot">{{ "no screenshot"|t }}</div>
+          {% endif %}
+          <div class="theme-info">
+            <h3>{{ theme_groups[group_key].themes[theme_key].name }} {{ theme_groups[group_key].themes[theme_key].version }} {{ theme_groups[group_key].themes[theme_key].notes }}</h3>
+            <div class="theme-description">{{ theme_groups[group_key].themes[theme_key].description }}</div>
+            {{ theme_groups[group_key].themes[theme_key].compatibility }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>
+{{ admin_form }}
