@@ -318,26 +318,22 @@ function template_preprocess_views_view_fields(&$vars) {
 }
 
 /**
- * Display a single views grouping.
+ * Prepares variables for views single grouping templates.
+ *
+ * Default template: views-view-grouping.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: The View object.
+ *   - rows: The rows returned from the view.
+ *   - grouping_level: Integer indicating the hierarchical level of the
+ *     grouping.
+ *   - content: The content to be grouped. This is set via aggregation settings
+ *     on the view.
+ *   - title: The group heading.
  */
-function theme_views_view_grouping($vars) {
-  $view = $vars['view'];
-  $title = $vars['title'];
-  $content = $vars['content'];
-
-  $output = '<div class="view-grouping">';
-  $output .= '<div class="view-grouping-header">' . $title . '</div>';
-  $output .= '<div class="view-grouping-content">' . $content . '</div>' ;
-  $output .= '</div>';
-
-  return $output;
-}
-
-/**
- * Process a single grouping within a view.
- */
-function template_preprocess_views_view_grouping(&$vars) {
-  $vars['content'] = $vars['view']->style_plugin->render_grouping_sets($vars['rows'], $vars['grouping_level']);
+function template_preprocess_views_view_grouping(&$variables) {
+  $variables['content'] = $variables['view']->style_plugin->render_grouping_sets($variables['rows'], $variables['grouping_level']);
 }
 
 /**
