@@ -77,7 +77,7 @@
 
       <div class="submitted">
         <p class="commenter-name">
-          <?php print $author; ?>
+          <?php print render($author); ?>
         </p>
         <p class="comment-time">
           <?php print $created; ?>

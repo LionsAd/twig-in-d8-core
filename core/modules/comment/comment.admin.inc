@@ -39,7 +39,6 @@ function comment_admin($type = 'new') {
  * @see comment_admin()
  * @see comment_admin_overview_validate()
  * @see comment_admin_overview_submit()
- * @see theme_comment_admin_overview()
  */
 function comment_admin_overview($form, &$form_state, $arg) {
   // Build an 'Update options' form.
@@ -119,7 +118,12 @@ function comment_admin_overview($form, &$form_state, $arg) {
           '#options' => array('attributes' => array('title' => truncate_utf8($comment->comment_body->value, 128)), 'fragment' => 'comment-' . $comment->id()),
         ),
       ),
-      'author' => theme('username', array('account' => comment_prepare_author($comment))),
+      'author' => array(
+        'data' => array(
+          '#theme' => 'username',
+          '#account' => comment_prepare_author($comment)
+        ),
+      ),
       'posted_in' => array(
         'data' => array(
           '#type' => 'link',
