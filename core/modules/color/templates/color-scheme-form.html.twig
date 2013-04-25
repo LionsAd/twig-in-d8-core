@@ -1,0 +1,29 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a theme's color form.
+ *
+ * Available variables:
+ * - scheme: A color scheme form element. For example: a select element with
+ *   color theme presets, or a color picker widget.
+ * - colors: Colors that can be changed by entering in a new hex value.
+ * - children: Child elements of the form that still need to be printed.
+ * - html_preview: A HTML preview of the theme's current color scheme.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_color_scheme_form()
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="color-form clearfix">
+  {{ scheme }}
+  <div id="palette" class="clearfix">
+    {% for color in colors %}
+      {{ color }}
+    {% endfor %}
+  </div>
+  {{ children }}
+  <h2>{{ 'Preview'|t }}</h2>
+  {{ html_preview }}
+</div>
