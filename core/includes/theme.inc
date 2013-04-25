@@ -1841,20 +1841,6 @@ function template_preprocess_links(&$variables) {
 }
 
 /**
- * Returns HTML for wrapping a dropbutton menu.
- *
- * @param array $variables
- *   An associative array containing:
- *   - element: An associative array containing the properties and children of
- *     the dropbutton menu. Properties used: #children.
- */
-function theme_dropbutton_wrapper($variables) {
-  if (!empty($variables['element']['#children'])) {
-    return '<div class="dropbutton-wrapper"><div class="dropbutton-widget">' . $variables['element']['#children'] . '</div></div>';
-  }
-}
-
-/**
  * Prepares variables for image templates.
  *
  * Default template: image.html.twig.
@@ -2567,26 +2553,6 @@ function theme_more_link($variables) {
 }
 
 /**
- * Returns HTML for a progress bar.
- *
- * Note that the core Batch API uses this only for non-JavaScript batch jobs.
- *
- * @param $variables
- *   An associative array containing:
- *   - percent: The percentage of the progress.
- *   - message: A string containing information to be displayed.
- */
-function theme_progress_bar($variables) {
-  $output = '<div id="progress" class="progress">';
-  $output .= '<div class="bar"><div class="filled" style="width: ' . $variables['percent'] . '%"></div></div>';
-  $output .= '<div class="percentage">' . $variables['percent'] . '%</div>';
-  $output .= '<div class="message">' . $variables['message'] . '</div>';
-  $output .= '</div>';
-
-  return $output;
-}
-
-/**
  * Prepares variables for meter templates.
  *
  * Default template: meter.html.twig.
@@ -3216,7 +3182,8 @@ function drupal_common_theme() {
       'template' => 'links',
     ),
     'dropbutton_wrapper' => array(
-      'render element' => 'element',
+      'variables' => array('children' => NULL),
+      'template' => 'dropbutton-wrapper',
     ),
     'image' => array(
       // HTML 4 and XHTML 1.0 always require an alt attribute. The HTML 5 draft
@@ -3271,6 +3238,7 @@ function drupal_common_theme() {
     ),
     'progress_bar' => array(
       'variables' => array('percent' => NULL, 'message' => NULL),
+      'template' => 'progress-bar',
     ),
     'indentation' => array(
       'variables' => array('size' => 1),
