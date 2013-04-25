@@ -2845,6 +2845,36 @@ function template_preprocess_page(&$variables) {
   $variables['site_slogan']       = (theme_get_setting('toggle_slogan') ? filter_xss_admin($site_config->get('slogan')) : '');
   $variables['tabs']              = menu_local_tabs();
 
+  // Pass the main menu and secondary menu to the template as render arrays.
+  if (!empty($variables['main_menu'])) {
+    $variables['main_menu'] = array(
+      '#theme' =>'links__system_main_menu',
+      '#links' => $variables['main_menu'],
+      '#attributes' => array(
+        'id' => 'main-menu',
+        'class' => array('links', 'inline', 'clearfix'),
+      ),
+      '#heading' => array(
+        'text' => t('Main menu'),
+        'class' => array('element-invisible'),
+      )
+    );
+  }
+  if (!empty($variables['secondary_menu'])) {
+    $variables['secondary_menu'] = array(
+      '#theme' =>'links__system_secondary_menu',
+      '#links' => $variables['secondary_menu'],
+      '#attributes' => array(
+        'id' => 'secondary-menu',
+        'class' => array('links', 'inline', 'clearfix'),
+      ),
+      '#heading' => array(
+        'text' => t('Secondary menu'),
+        'class' => array('element-invisible'),
+      )
+    );
+  }
+
   if ($node = menu_get_object()) {
     $variables['node'] = $node;
   }
