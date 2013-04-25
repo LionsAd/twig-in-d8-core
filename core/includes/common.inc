@@ -1849,6 +1849,38 @@ function url_is_external($path) {
 }
 
 /**
+ * Returns TRUE if the current URL matches the given path and options.
+ *
+ * @param string $path
+ *   An internal path or external url as could be used by url().
+ * @param array $options
+ *   An associative array of options as could be used by url().
+ *
+ * @return bool
+ *   Boolean TRUE or FALSE, where TRUE indicates an active path.
+ *
+ * @see url()
+ */
+function url_is_active($path, $options = array()) {
+  // Merge in defaults.
+  $options += array(
+    'query' => array(),
+    'language' => NULL,
+  );
+
+  // A path is only active if it corresponds to the current path, the
+  // language of the path is equal to the current language, and if the
+  // query parameters of the URL equal those of the current request, since the
+  // same request with different query parameters may yield a different page
+  // (e.g., pagers).
+  $path_match = $path == current_path() || ($path == '<front>' && drupal_is_front_page());
+  $lang_match = empty($options['language']) || $options['language']->langcode == language(LANGUAGE_TYPE_URL)->langcode;
+  $query_match = Drupal::service('request')->query->all() == $options['query'];
+
+  return $path_match && $lang_match && $query_match;
+}
+
+/**
  * Formats an attribute string for an HTTP header.
  *
  * @param $attributes
@@ -1917,68 +1949,50 @@ function drupal_http_header_attributes(array $attributes = array()) {
  *   An HTML string containing a link to the given path.
  *
  * @see url()
+ * @see theme_link()
  */
 function l($text, $path, array $options = array()) {
-  static $use_theme = NULL;
+  // Build a variables array to keep the structure of the alter consistent with
+  // theme_link().
+  $variables = array(
+    'text' => $text,
+    'path' => $path,
+    'options' => $options,
+  );
 
   // Merge in defaults.
-  $options += array(
+  $variables['options'] += array(
     'attributes' => array(),
     'query' => array(),
     'html' => FALSE,
   );
 
-  // Append active class.
-  // The link is only active, if its path corresponds to the current path, the
-  // language of the linked path is equal to the current language, and if the
-  // query parameters of the link equal those of the current request, since the
-  // same request with different query parameters may yield a different page
-  // (e.g., pagers).
-  $is_active = ($path == current_path() || ($path == '<front>' && drupal_is_front_page()));
-  $is_active = $is_active && (empty($options['language']) || $options['language']->langcode == language(LANGUAGE_TYPE_URL)->langcode);
-  $is_active = $is_active && (drupal_container()->get('request')->query->all() == $options['query']);
-  if ($is_active) {
-    $options['attributes']['class'][] = 'active';
+  // Add 'active' class if appropriate.
+  if ($variables['url_is_active'] = url_is_active($variables['path'], $variables['options'])) {
+    $variables['options']['attributes']['class'][] = 'active';
   }
 
-  // Remove all HTML and PHP tags from a tooltip. For best performance, we act only
-  // if a quick strpos() pre-check gave a suspicion (because strip_tags() is expensive).
-  if (isset($options['attributes']['title']) && strpos($options['attributes']['title'], '<') !== FALSE) {
-    $options['attributes']['title'] = strip_tags($options['attributes']['title']);
+  // Remove all HTML and PHP tags from a tooltip, calling expensive strip_tags()
+  // only when a quick strpos() gives suspicion tags are present.
+  if (isset($variables['options']['attributes']['title']) && strpos($variables['options']['attributes']['title'], '<') !== FALSE) {
+    $variables['options']['attributes']['title'] = strip_tags($variables['options']['attributes']['title']);
   }
 
-  // Determine if rendering of the link is to be done with a theme function
-  // or the inline default. Inline is faster, but if the theme system has been
-  // loaded and a module or theme implements a preprocess or process function
-  // or overrides the theme_link() function, then invoke theme(). Preliminary
-  // benchmarks indicate that invoking theme() can slow down the l() function
-  // by 20% or more, and that some of the link-heavy Drupal pages spend more
-  // than 10% of the total page request time in the l() function.
-  if (!isset($use_theme) && function_exists('theme')) {
-    // Allow edge cases to prevent theme initialization and force inline link
-    // rendering.
-    if (config('system.performance')->get('theme_link')) {
-      drupal_theme_initialize();
-      $registry = theme_get_registry(FALSE);
-      // We don't want to duplicate functionality that's in theme(), so any
-      // hint of a module or theme doing anything at all special with the 'link'
-      // theme hook should simply result in theme() being called. This includes
-      // the overriding of theme_link() with an alternate function or template,
-      // the presence of preprocess or process functions, or the presence of
-      // include files.
-      $use_theme = !isset($registry['link']['function']) || ($registry['link']['function'] != 'theme_link');
-      $use_theme = $use_theme || !empty($registry['link']['preprocess functions']) || !empty($registry['link']['process functions']) || !empty($registry['link']['includes']);
-    }
-    else {
-      $use_theme = FALSE;
-    }
-  }
-  if ($use_theme) {
-    return theme('link', array('text' => $text, 'path' => $path, 'options' => $options));
-  }
+  // Allow other modules to modify the structure of the link.
+  Drupal::service('module_handler')->alter('link', $variables);
+
+  // Move attributes out of options. url() doesn't need them.
+  $attributes = new Attribute($variables['options']['attributes']);
+  unset($variables['options']['attributes']);
+
   // The result of url() is a plain-text URL. Because we are using it here
   // in an HTML argument context, we need to encode it properly.
-  return '<a href="' . check_plain(url($path, $options)) . '"' . new Attribute($options['attributes']) . '>' . ($options['html'] ? $text : check_plain($text)) . '</a>';
+  $url = check_plain(url($variables['path'], $variables['options']));
+
+  // Sanitize the link text if necessary.
+  $text = $variables['options']['html'] ? $variables['text'] : check_plain($variables['text']);
+
+  return '<a href="' . $url . '"' . $attributes . '>' . $text . '</a>';
 }
 
 /**
