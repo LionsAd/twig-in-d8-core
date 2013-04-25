@@ -445,37 +445,44 @@ function template_preprocess_views_view_summary_unformatted(&$vars) {
 }
 
 /**
- * Display a view as a table style.
+ * Prepares variables for Views table templates.
+ *
+ * Default template: views-view-table.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: A View object.
  */
 function template_preprocess_views_view_table(&$vars) {
-  $view     = $vars['view'];
+  $view = $vars['view'];
 
-  // We need the raw data for this grouping, which is passed in as $vars['rows'].
+  // We need the raw data for this grouping, which is passed in
+  // as $vars['rows'].
   // However, the template also needs to use for the rendered fields.  We
   // therefore swap the raw data out to a new variable and reset $vars['rows']
   // so that it can get rebuilt.
   // Store rows so that they may be used by further preprocess functions.
-  $result   = $vars['result'] = $vars['rows'];
+  $result = $vars['result'] = $vars['rows'];
   $vars['rows'] = array();
   $vars['field_classes'] = array();
   $vars['header'] = array();
 
-  $options  = $view->style_plugin->options;
-  $handler  = $view->style_plugin;
+  $options = $view->style_plugin->options;
+  $handler = $view->style_plugin;
 
   $default_row_class = isset($options['default_row_class']) ? $options['default_row_class'] : TRUE;
   $row_class_special = isset($options['row_class_special']) ? $options['row_class_special'] : TRUE;
 
-  $fields   = &$view->field;
-  $columns  = $handler->sanitize_columns($options['columns'], $fields);
+  $fields = &$view->field;
+  $columns = $handler->sanitize_columns($options['columns'], $fields);
 
-  $active   = !empty($handler->active) ? $handler->active : '';
-  $order    = !empty($handler->order) ? $handler->order : 'asc';
+  $active = !empty($handler->active) ? $handler->active : '';
+  $order = !empty($handler->order) ? $handler->order : 'asc';
 
   // A boolean variable which stores whether the table has a responsive class.
   $responsive = FALSE;
 
-  $query    = tablesort_get_query_parameters();
+  $query = tablesort_get_query_parameters();
   if (isset($view->exposed_raw_input)) {
     $query += $view->exposed_raw_input;
   }
@@ -532,11 +539,10 @@ function template_preprocess_views_view_table(&$vars) {
         $vars['header_classes'][$field]['class'][] = $options['info'][$field]['responsive'];
         $responsive = TRUE;
       }
-      // Add a CSS align class to each field if one was set
+      // Add a CSS align class to each field if one was set.
       if (!empty($options['info'][$field]['align'])) {
         $vars['header_classes'][$field]['class'][] = drupal_clean_css_identifier($options['info'][$field]['align']);
       }
-
       // Add a header label wrapper if one was selected.
       if ($vars['header'][$field]) {
         $element_label_type = $fields[$field]->element_label_type(TRUE, TRUE);
@@ -544,17 +550,16 @@ function template_preprocess_views_view_table(&$vars) {
           $vars['header'][$field] = '<' . $element_label_type . '>' . $vars['header'][$field] . '</' . $element_label_type . '>';
         }
       }
-
     }
 
-    // Add a CSS align class to each field if one was set
+    // Add a CSS align class to each field if one was set.
     if (!empty($options['info'][$field]['align'])) {
       $vars['fields'][$field] .= ' ' . drupal_clean_css_identifier($options['info'][$field]['align']);
     }
 
     // Render each field into its appropriate column.
     foreach ($result as $num => $row) {
-      // Add field classes
+      // Add field classes.
       $vars['field_classes'][$field][$num] = array();
       if ($fields[$field]->options['element_default_classes']) {
         $vars['field_classes'][$field][$num]['class'][] = 'views-field';
@@ -591,7 +596,6 @@ function template_preprocess_views_view_table(&$vars) {
         else {
           $vars['rows'][$num][$column] = '';
         }
-
         $vars['rows'][$num][$column] .= $field_output;
       }
     }
@@ -651,7 +655,7 @@ function template_preprocess_views_view_table(&$vars) {
   $vars['attributes']['class'][] = 'cols-' . count($vars['header']);
 
   if (!empty($handler->options['summary'])) {
-    $vars['attributes_array'] = array('summary' => $handler->options['summary']);
+    $vars['attributes']['summary'] = $handler->options['summary'];
   }
   // If the table has headers and it should react responsively to columns hidden
   // with the classes represented by the constants RESPONSIVE_PRIORITY_MEDIUM
