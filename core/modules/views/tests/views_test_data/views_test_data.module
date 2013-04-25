@@ -75,7 +75,15 @@ function views_test_data_preprocess_views_view_table(&$variables) {
 }
 
 /**
- * Implements hook_preprocess_HOOK() for theme_views_view_mapping_test().
+ * Prepares variables for the mapping row style test templates.
+ *
+ * Default template: views-view-mapping-test.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - rows: A list of View rows.
+ *   - options: Various View options, including the row style mapping.
+ *   - view: The View object.
  */
 function template_preprocess_views_view_mapping_test(&$variables) {
   $variables['element'] = array();
@@ -121,13 +129,6 @@ function template_preprocess_views_view_mapping_test(&$variables) {
       );
     }
   }
-}
-
-/**
- * Returns HTML for the Mapping Test style.
- */
-function theme_views_view_mapping_test($variables) {
-  return drupal_render($variables['element']);
 }
 
 /**
