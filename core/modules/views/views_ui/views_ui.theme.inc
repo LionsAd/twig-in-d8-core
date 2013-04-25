@@ -115,40 +115,68 @@ function theme_views_ui_expose_filter_form($variables) {
 }
 
 /**
- * Theme the build group filter form.
+ * Prepares variables for a Views UI build group filter form templates.
+ *
+ * Default template: views-ui-build-group-filter-form.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - form: A render element representing the form.
  */
-function theme_views_ui_build_group_filter_form($variables) {
+function template_preprocess_views_ui_build_group_filter_form(&$variables) {
   $form = $variables['form'];
-  $more = drupal_render($form['more']);
 
-  $output = drupal_render($form['form_description']);
-  $output .= drupal_render($form['expose_button']);
-  $output .= drupal_render($form['group_button']);
+  $variables['form_description'] = $form['form_description'];
+  $variables['expose_button'] = $form['expose_button'];
+  $variables['group_button'] = $form['group_button'];
+  unset($form['form_description']);
+  unset($form['expose_button']);
+  unset($form['group_button']);
+
   if (isset($form['required'])) {
-    $output .= drupal_render($form['required']);
+    $variables['required'] = $form['required'];
+    unset($form['required']);
   }
 
-  $output .= drupal_render($form['operator']);
-  $output .= drupal_render($form['value']);
+  if (isset($form['operator'])) {
+    $variables['operator'] = $form['operator'];
+    unset($form['operator']);
+  }
 
-  $output .= '<div class="views-left-40">';
-  $output .= drupal_render($form['optional']);
-  $output .= drupal_render($form['remember']);
-  $output .= '</div>';
+  if (isset($form['value'])) {
+    $variables['value'] = $form['value'];
+    unset($form['value']);
+  }
 
-  $output .= '<div class="views-right-60">';
-  $output .= drupal_render($form['widget']);
-  $output .= drupal_render($form['label']);
-  $output .= drupal_render($form['description']);
-  $output .= '</div>';
+  $variables['optional'] = $form['optional'];
+  $variables['remember'] = $form['remember'];
+  unset($form['optional']);
+  unset($form['remember']);
 
-  $header = array(
-    t('Default'),
-    t('Weight'),
-    t('Label'),
-    t('Operator'),
-    t('Value'),
-    t('Operations'),
+  $variables['widget'] = $form['widget'];
+  $variables['label'] = $form['label'];
+  $variables['description'] = $form['description'];
+  unset($form['widget']);
+  unset($form['label']);
+  unset($form['description']);
+
+  $variables['table'] = array(
+    '#type' => 'table',
+    '#header' => array(
+      t('Default'),
+      t('Weight'),
+      t('Label'),
+      t('Operator'),
+      t('Value'),
+      t('Operations'),
+    ),
+    '#tabledrag' => array(
+      array('order', 'sibling', 'weight'),
+    ),
+    '#attributes' => array(
+      'class' => array('views-filter-groups'),
+      'id' => 'views-filter-groups',
+    ),
   );
 
   $form['default_group'] = form_process_radios($form['default_group']);
@@ -156,8 +184,10 @@ function theme_views_ui_build_group_filter_form($variables) {
   $form['default_group']['All']['#title'] = '';
 
   hide($form['default_group_multiple']['All']);
-  $rows[] = array(
-    drupal_render($form['default_group']['All']),
+  $variables['table']['#rows'][] = array(
+    array(
+      'data' => $form['default_group']['All'],
+    ),
     '',
     array(
       'data' => config('views.settings')->get('ui.exposed_filter_any_label') == 'old_any' ? t('&lt;Any&gt;') : t('- Any -'),
@@ -168,20 +198,69 @@ function theme_views_ui_build_group_filter_form($variables) {
 
   foreach (element_children($form['group_items']) as $group_id) {
     $form['group_items'][$group_id]['value']['#title'] = '';
-    $data = array(
-      'default' => drupal_render($form['default_group'][$group_id]) . drupal_render($form['default_group_multiple'][$group_id]),
-      'weight' => drupal_render($form['group_items'][$group_id]['weight']),
-      'title' => drupal_render($form['group_items'][$group_id]['title']),
-      'operator' => drupal_render($form['group_items'][$group_id]['operator']),
-      'value' => drupal_render($form['group_items'][$group_id]['value']),
-      'remove' => drupal_render($form['group_items'][$group_id]['remove']) . l('<span>' . t('Remove') . '</span>', 'javascript:void()', array('attributes' => array('id' => 'views-remove-link-' . $group_id, 'class' => array('views-hidden', 'views-button-remove', 'views-groups-remove-link', 'views-remove-link'), 'alt' => t('Remove this item'), 'title' => t('Remove this item')), 'html' => true)),
+    $remove_link = array(
+      '#theme' => 'link',
+      '#path' => 'javascript:void()',
+      '#text' => '<span>' . t('Remove') . '</span>',
+      '#options' => array(
+        'attributes' => array(
+          'id' => 'views-remove-link-' . $group_id,
+          'class' => array(
+            'views-hidden',
+            'views-button-remove',
+            'views-groups-remove-link',
+            'views-remove-link',
+          ),
+          'alt' => t('Remove this item'),
+          'title' => t('Remove this item'),
+        ),
+        'html' => TRUE,
+      ),
     );
-    $rows[] = array('data' => $data, 'id' => 'views-row-' . $group_id, 'class' => array('draggable'));
+    $data = array(
+      'default' => array(
+        'data' => array(
+          $form['default_group'][$group_id],
+          $form['default_group_multiple'][$group_id],
+        ),
+      ),
+      'weight' => array(
+        'data' => $form['group_items'][$group_id]['weight'],
+      ),
+      'title' => array(
+        'data' => $form['group_items'][$group_id]['title'],
+      ),
+      'operator' => array(
+        'data' => $form['group_items'][$group_id]['operator'],
+      ),
+      'value' => array(
+        'data' => $form['group_items'][$group_id]['value'],
+      ),
+      'remove' => array(
+        'data' => array(
+          $form['group_items'][$group_id]['remove'],
+          $remove_link,
+        ),
+      ),
+    );
+    $variables['table']['#rows'][] = array(
+      'data' => $data,
+      'id' => 'views-row-' . $group_id,
+      'class' => array('draggable'),
+    );
   }
-  $table = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('views-filter-groups'), 'id' => 'views-filter-groups'))) . drupal_render($form['add_group']);
-  drupal_add_tabledrag('views-filter-groups', 'order', 'sibling', 'weight');
-  $render_form = drupal_render_children($form);
-  return $output . $render_form . $table . $more;
+  unset($form['group_items']);
+  unset($form['default_group']);
+  unset($form['default_group_multiple']);
+
+  $variables['add_group'] = $form['add_group'];
+  $variables['more'] = $form['more'];
+  unset($form['add_group']);
+  unset($form['more']);
+
+  // Remove elements from the 'children' render array.
+  // @todo Refactor when http://drupal.org/node/1920886 is resolved.
+  $variables['children'] = drupal_render_children($form);
 }
 
 /**

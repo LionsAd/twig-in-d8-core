@@ -133,6 +133,7 @@ function views_ui_theme() {
     'views_ui_build_group_filter_form' => array(
       'render element' => 'form',
       'file' => 'views_ui.theme.inc',
+      'template' => 'views-ui-build-group-filter-form',
     ),
 
     // Reordering displays.

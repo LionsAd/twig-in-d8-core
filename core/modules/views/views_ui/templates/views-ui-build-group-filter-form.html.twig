@@ -1,0 +1,61 @@
+{#
+/**
+ * @file
+ * Default theme implementation for build group filter form.
+ *
+ * Available variables:
+ * - form_description: @todo.
+ * - expose_button: @todo.
+ * - group_button: @todo.
+ * - required: @todo.
+ * - operator: @todo.
+ * - value: @todo.
+ * - optional: @todo.
+ * - remember: @todo.
+ * - widget: @todo.
+ * - label: @todo.
+ * - description: @todo.
+ * - children: @todo.
+ * - table: A rendered table element of the group filter form..
+ * - add_group: @todo.
+ * - more: @todo.
+ * - children: Child elements of the form that still need to be printed.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_views_ui_build_group_filter_form()
+ *
+ * @ingroup themeable
+ */
+#}
+{{ form_description }}
+{{ expose_button }}
+{{ group_button }}
+
+{% if required %}
+  {{ required }}
+{% endif %}
+
+{% if operator %}
+  {{ operator }}
+{% endif %}
+{% if value %}
+  {{ value }}
+{% endif %}
+
+<div class="views-left-40">
+  {{ optional }}
+  {{ remember }}
+</div>
+<div class="views-right-60">
+  {% if widget %}
+    {{ widget }}
+  {% endif %}
+  {{ label }}
+  {{ description }}
+</div>
+
+{{ children }}
+{{ table }}
+
+{{ add_group }}
+{{ more }}
