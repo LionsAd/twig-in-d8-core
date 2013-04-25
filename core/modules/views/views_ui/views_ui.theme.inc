@@ -8,11 +8,18 @@
 use Drupal\Core\Template\Attribute;
 
 /**
- * Generic <div> container function.
+ * Prepares variables for Views UI container templates.
+ *
+ * Default template: views-ui-container.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - element: An associative array containing the properties of the element.
+ *     Properties used: #attributes, #children.
  */
-function theme_views_ui_container($variables) {
-  $element = $variables['element'];
-  return '<div' . new Attribute($element['#attributes']) . '>' . $element['#children'] . '</div>';
+function template_preprocess_views_ui_container(&$variables) {
+  $variables['attributes'] = new Attribute($variables['element']['#attributes']);
+  $variables['children'] = $variables['element']['#children'];
 }
 
 function template_preprocess_views_ui_display_tab_setting(&$variables) {
