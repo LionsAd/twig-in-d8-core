@@ -69,7 +69,7 @@ class ImageDimensionsTest extends WebTestBase {
     );
 
     image_effect_save($style, $effect);
-    $img_tag = theme_image_style($variables);
+    $img_tag = theme('image_style', $variables);
     $this->assertEqual($img_tag, '<img class="image-style-test" src="' . $url . '" width="120" height="60" alt="" />');
     $this->assertFalse(file_exists($generated_uri), 'Generated file does not exist.');
     $this->drupalGet($url);
@@ -90,7 +90,7 @@ class ImageDimensionsTest extends WebTestBase {
     );
 
     image_effect_save($style, $effect);
-    $img_tag = theme_image_style($variables);
+    $img_tag = theme('image_style', $variables);
     $this->assertEqual($img_tag, '<img class="image-style-test" src="' . $url . '" width="60" height="120" alt="" />');
     $this->assertFalse(file_exists($generated_uri), 'Generated file does not exist.');
     $this->drupalGet($url);
@@ -112,7 +112,7 @@ class ImageDimensionsTest extends WebTestBase {
     );
 
     image_effect_save($style, $effect);
-    $img_tag = theme_image_style($variables);
+    $img_tag = theme('image_style', $variables);
     $this->assertEqual($img_tag, '<img class="image-style-test" src="' . $url . '" width="45" height="90" alt="" />');
     $this->assertFalse(file_exists($generated_uri), 'Generated file does not exist.');
     $this->drupalGet($url);
@@ -134,7 +134,7 @@ class ImageDimensionsTest extends WebTestBase {
     );
 
     image_effect_save($style, $effect);
-    $img_tag = theme_image_style($variables);
+    $img_tag = theme('image_style', $variables);
     $this->assertEqual($img_tag, '<img class="image-style-test" src="' . $url . '" width="45" height="90" alt="" />');
     $this->assertFalse(file_exists($generated_uri), 'Generated file does not exist.');
     $this->drupalGet($url);
@@ -152,7 +152,7 @@ class ImageDimensionsTest extends WebTestBase {
     );
 
     image_effect_save($style, $effect);
-    $img_tag = theme_image_style($variables);
+    $img_tag = theme('image_style', $variables);
     $this->assertEqual($img_tag, '<img class="image-style-test" src="' . $url . '" width="45" height="90" alt="" />');
     $this->assertFalse(file_exists($generated_uri), 'Generated file does not exist.');
     $this->drupalGet($url);
@@ -173,7 +173,7 @@ class ImageDimensionsTest extends WebTestBase {
     );
 
     image_effect_save($style, $effect);
-    $img_tag = theme_image_style($variables);
+    $img_tag = theme('image_style', $variables);
     $this->assertEqual($img_tag, '<img class="image-style-test" src="' . $url . '" alt="" />');
     $this->assertFalse(file_exists($generated_uri), 'Generated file does not exist.');
     $this->drupalGet($url);
@@ -193,7 +193,7 @@ class ImageDimensionsTest extends WebTestBase {
     );
 
     image_effect_save($style, $effect);
-    $img_tag = theme_image_style($variables);
+    $img_tag = theme('image_style', $variables);
     $this->assertEqual($img_tag, '<img class="image-style-test" src="' . $url . '" width="30" height="30" alt="" />');
     $this->assertFalse(file_exists($generated_uri), 'Generated file does not exist.');
     $this->drupalGet($url);
@@ -214,7 +214,7 @@ class ImageDimensionsTest extends WebTestBase {
     );
 
     image_effect_save($style, $effect);
-    $img_tag = theme_image_style($variables);
+    $img_tag = theme('image_style', $variables);
     $this->assertEqual($img_tag, '<img class="image-style-test" src="' . $url . '" alt="" />');
     $this->assertFalse(file_exists($generated_uri), 'Generated file does not exist.');
     $this->drupalGet($url);
@@ -232,7 +232,7 @@ class ImageDimensionsTest extends WebTestBase {
     );
 
     image_effect_save($style, $effect);
-    $img_tag = theme_image_style($variables);
+    $img_tag = theme('image_style', $variables);
     $this->assertEqual($img_tag, '<img class="image-style-test" src="' . $url . '" alt="" />');
   }
 }
