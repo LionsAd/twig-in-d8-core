@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a list of maintenance tasks to perform.
+ *
+ * Available variables:
+ * - tasks: A list of maintenance tasks to perform. Each item in the list has
+ *   the following variables:
+ *   - item: The maintenance task.
+ *   - attributes: HTML attributes for the maintenance task.
+ *   - status: (optional) Text describing the status of the maintenance task,
+ *     'active' or 'done'.
+ *
+ * @see template_preprocess()
+ *
+ * @ingroup themeable
+ */
+#}
+<h2 class="element-invisible">Installation tasks</h2>
+<ol class="task-list">
+{% for task in tasks %}
+  <li class="{{ task.attributes.class }}">
+    {{- task.item -}}
+    {%- if task.status %} <span class="element-invisible">({{ task.status }})</span>{% endif -%}
+  </li>
+{% endfor %}
+</ol>
