@@ -1,0 +1,40 @@
+{#
+/**
+ * Default theme implementation for the status report.
+ *
+ * Available variables:
+ * - requirements: contains multiple requirement instances. Each requirement
+ *     has .title, .value and .description.
+ * - severity: The severity of error. Contains .title and .class.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_status_report()
+ *
+ * @ingroup themeable
+ */
+#}
+<table class="system-status-report">
+  <thead>
+    <tr class="element-invisible">
+      <th>{{ 'Status'|t }}</th><th>{{ 'Component'|t }}</th><th>{{ 'Details'|t }}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for i in requirements|keys %}
+    <tr class="{{ requirements[i].severity_class }}">
+      <td class="status-icon">
+        <div title="{{ requirements[i].severity_title }}">
+          <span class="element-invisible">{{ requirements[i].severity_title }}</span>
+        </div>
+      </td>
+      <td class="status-title">{{ requirements[i].title }}</td>
+      <td class="status-value">
+        {{ requirements[i].value }}
+        {% if requirements[i].description %}
+        <div class="description">{{ requirements[i].description }}</div>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
