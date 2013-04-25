@@ -94,24 +94,24 @@ class FunctionsTest extends WebTestBase {
       'f',
     );
 
-    $inner_b = '<div class="item-list"><ol id="blist">';
+    $inner_b = '<div class="item-list">' . "\n  " . '<ol id="blist">';
     $inner_b .= '<li class="odd first">ba</li>';
     $inner_b .= '<li class="item-class-bb even last">bb</li>';
-    $inner_b .= '</ol></div>';
+    $inner_b .= '</ol>' . "\n" . '</div>' . "\n";
 
-    $inner_cb = '<div class="item-list"><ul>';
+    $inner_cb = '<div class="item-list">' . "\n  " . '<ul>';
     $inner_cb .= '<li class="odd first">cba</li>';
     $inner_cb .= '<li class="even last">cbb</li>';
-    $inner_cb .= '</ul></div>';
+    $inner_cb .= '</ul>' . "\n" . '</div>' . "\n";
 
-    $inner_c = '<div class="item-list"><ul id="clist">';
+    $inner_c = '<div class="item-list">' . "\n  " . '<ul id="clist">';
     $inner_c .= '<li class="odd first">ca</li>';
     $inner_c .= '<li class="item-class-cb even">cb' . $inner_cb . '</li>';
     $inner_c .= '<li class="odd last">cc</li>';
-    $inner_c .= '</ul></div>';
+    $inner_c .= '</ul>' . "\n" . '</div>' . "\n";
 
-    $expected = '<div class="item-list">';
-    $expected .= '<h3>Some title</h3>';
+    $expected = '<div class="item-list">' . "\n  ";
+    $expected .= '<h3>Some title</h3>' . "\n  ";
     $expected .= '<ul id="parentlist">';
     $expected .= '<li class="odd first">a</li>';
     $expected .= '<li id="item-id-b" class="even">b' . $inner_b . '</li>';
@@ -119,7 +119,7 @@ class FunctionsTest extends WebTestBase {
     $expected .= '<li id="item-id-d" class="even">d</li>';
     $expected .= '<li id="item-id-e" class="odd"></li>';
     $expected .= '<li class="even last">f</li>';
-    $expected .= '</ul></div>';
+    $expected .= '</ul>' . "\n" . '</div>' . "\n";
 
     $this->assertThemeOutput('item_list', $variables, $expected);
   }
