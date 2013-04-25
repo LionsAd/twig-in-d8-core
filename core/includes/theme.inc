@@ -1658,26 +1658,54 @@ function template_preprocess_status_messages(&$variables) {
   );
 }
 
-/**
- * Returns HTML for a link.
- *
- * All Drupal code that outputs a link should call the l() function. That
- * function performs some initial preprocessing, and then, if necessary, calls
- * theme('link') for rendering the anchor tag.
- *
- * To optimize performance for sites that don't need custom theming of links,
- * the l() function includes an inline copy of this function, and uses that
- * copy if none of the enabled modules or the active theme implement any
- * preprocess or process functions or override this theme implementation.
- *
- * @param $variables
- *   An associative array containing the keys 'text', 'path', and 'options'.
- *   See the l() function for information about these variables.
- *
- * @see l()
- */
-function theme_link($variables) {
-  return '<a href="' . check_plain(url($variables['path'], $variables['options'])) . '"' . new Attribute($variables['options']['attributes']) . '>' . ($variables['options']['html'] ? $variables['text'] : check_plain($variables['text'])) . '</a>';
+ /**
+  * Prepares variables for link templates.
+  *
+  * Default template: link.html.twig.
+  *
+  * All Drupal code that outputs a link should call the l() function. That
+  * function performs some initial preprocessing, and then, if necessary, calls
+  *
+  * @see l()
+  */
+function template_preprocess_link(&$variables) {
+  // Merge in defaults.
+  $variables['options'] += array(
+    'attributes' => array(),
+    'query' => array(),
+    'html' => FALSE,
+  );
+
+  // Add 'active' class if appropriate.
+  if ($variables['url_is_active'] = url_is_active($variables['path'], $variables['options'])) {
+    $variables['options']['attributes']['class'][] = 'active';
+  }
+
+  // Remove all HTML and PHP tags from a tooltip, calling expensive strip_tags()
+  // only when a quick strpos() gives suspicion tags are present.
+  if (isset($variables['options']['attributes']['title']) && strpos($variables['options']['attributes']['title'], '<') !== FALSE) {
+    $variables['options']['attributes']['title'] = strip_tags($variables['options']['attributes']['title']);
+  }
+
+  // Allow other modules to modify the structure of the link.
+  drupal_container()->get('module_handler')->alter('link', $variables);
+
+  // Move attributes out of options.  url() doesn't need them and they make more
+  // sense as top level variables in templates.
+  $attributes = array();
+  if (isset($variables['options']['attributes'])) {
+    $attributes = $variables['options']['attributes'];
+    unset($variables['options']['attributes']);
+  }
+  $variables['attributes'] = new Attribute($attributes);
+
+  // The result of url() is a plain-text URL. Because we are using it here
+  // in an HTML argument context, we need to encode it properly.
+  $variables['url'] = check_plain(url($variables['path'], $variables['options']));
+
+  // Sanitize the link text if necessary.
+  $rendered_text = is_array($variables['text']) ? drupal_render($variables['text']) : $variables['text'];
+  $variables['text'] = ($variables['options']['html']) ? $rendered_text : check_plain($rendered_text);
 }
 
 /**
@@ -3181,6 +3209,7 @@ function drupal_common_theme() {
     ),
     'link' => array(
       'variables' => array('text' => NULL, 'path' => NULL, 'options' => array()),
+      'template' => 'link',
     ),
     'links' => array(
       'variables' => array('links' => array(), 'attributes' => array('class' => array('links')), 'heading' => array()),
