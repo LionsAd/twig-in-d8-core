@@ -1,0 +1,25 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the content of an administrative block.
+ *
+ * Available variables:
+ * - content: List of administrative menu items.
+ *   - item.path: Path to the admin section.
+ *   - item.label: Short name of the section
+ *   - item.description: Description of the administrative menu item.
+ * - compact: class indicator for compact mode (empty if not compact)
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_admin_block_content()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if content %}
+  <ul class="admin-list {{ compact }}">
+    {% for item in content %}
+      <li><a href="{{ item.path }}"><span class="label">{{ item.label }}</span><div class="description">{{ item.description }}</div></a></li>
+    {% endfor %}
+  </ul>
+{% endif %}
