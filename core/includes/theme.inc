@@ -2492,41 +2492,37 @@ function template_preprocess_feed_icon(&$variables) {
 }
 
 /**
- * Returns HTML for a generic HTML tag with attributes.
+ * Prepares variables for HTML tag templates.
  *
- * @param $variables
+ * Default template: html-tag.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - element: An associative array describing the tag:
  *     - #tag: The tag name to output. Typical tags added to the HTML HEAD:
- *       - meta: To provide meta information, such as a page refresh.
- *       - link: To refer to stylesheets and other contextual information.
- *       - script: To load JavaScript.
+ *       - meta: Used to provide meta information, such as a page refresh.
+ *       - link: Used to refer to stylesheets and other contextual information.
+ *       - script: Used for loading JavaScript.
  *     - #attributes: (optional) An array of HTML attributes to apply to the
  *       tag.
- *     - #value: (optional) A string containing tag content, such as inline
- *       CSS.
+ *     - #value: (optional) A string containing tag content, such as inline CSS.
  *     - #value_prefix: (optional) A string to prepend to #value, e.g. a CDATA
  *       wrapper prefix.
  *     - #value_suffix: (optional) A string to append to #value, e.g. a CDATA
  *       wrapper suffix.
  */
-function theme_html_tag($variables) {
+function template_preprocess_html_tag(&$variables) {
   $element = $variables['element'];
-  $attributes = isset($element['#attributes']) ? new Attribute($element['#attributes']) : '';
-  if (!isset($element['#value'])) {
-    return '<' . $element['#tag'] . $attributes . " />\n";
+  $variables['attributes'] = isset($element['#attributes']) ? new Attribute($element['#attributes']) : new Attribute(array());
+  $variables['tag'] = $element['#tag'];
+  if (isset($element['#value'])) {
+    $variables['value'] = $element['#value'];
   }
-  else {
-    $output = '<' . $element['#tag'] . $attributes . '>';
-    if (isset($element['#value_prefix'])) {
-      $output .= $element['#value_prefix'];
-    }
-    $output .= $element['#value'];
-    if (isset($element['#value_suffix'])) {
-      $output .= $element['#value_suffix'];
-    }
-    $output .= '</' . $element['#tag'] . ">\n";
-    return $output;
+  if (isset($element['#value_prefix'])) {
+    $variables['value_prefix'] = $element['#value_prefix'];
+  }
+  if (isset($element['#value_prefix'])) {
+    $variables['value_suffix'] = $element['#value_suffix'];
   }
 }
 
@@ -3217,6 +3213,7 @@ function drupal_common_theme() {
     ),
     'html_tag' => array(
       'render element' => 'element',
+      'template' => 'html-tag',
     ),
     // From theme.maintenance.inc.
     'maintenance_page' => array(
