@@ -157,24 +157,28 @@ function node_theme() {
     'node_add_list' => array(
       'variables' => array('content' => NULL),
       'file' => 'node.pages.inc',
+      'template' => 'node-add-list',
     ),
     'node_preview' => array(
       'variables' => array('node' => NULL),
       'file' => 'node.pages.inc',
+      'template' => 'node-preview',
     ),
     'node_admin_overview' => array(
       'variables' => array('name' => NULL, 'type' => NULL),
       'file' => 'content_types.inc',
+      'template' => 'node-admin-overview',
     ),
     'node_recent_block' => array(
       'variables' => array('nodes' => NULL),
+      'template' => 'node-recent-block',
     ),
     'node_recent_content' => array(
       'variables' => array('node' => NULL),
+      'template' => 'node-recent-content',
     ),
     'node_edit_form' => array(
       'render element' => 'form',
-      'path' => drupal_get_path('module', 'node') . '/templates',
       'template' => 'node-edit-form',
     ),
   );
@@ -1119,19 +1123,38 @@ function node_preprocess_block(&$variables) {
 }
 
 /**
- * Processes variables for node.tpl.php.
+ * Prepares variables for node edit form templates.
  *
- * Most themes utilize their own copy of node.tpl.php. The default is located
- * inside "modules/node/node.tpl.php". Look in there for the full list of
- * variables.
+ * Default template: node-edit-form.html.twig.
  *
- * @param $variables
+ * @param array $variables
+ *   An associative array containing:
+ *   - form: The complete node form.
+ */
+function template_preprocess_node_edit_form(&$variables) {
+  // Prevent recursion loop by removing '#theme' and '#theme_wrappers' keys.
+  // Remove this function when http://drupal.org/node/1920886 is resolved.
+  foreach (array('#theme', '#theme_wrappers') as $theme_key) {
+    if (isset($variables['form'][$theme_key])) {
+      unset($variables['form'][$theme_key]);
+    }
+  }
+}
+
+/**
+ * Prepares variables for node templates.
+ *
+ * Default template: node.html.twig.
+ *
+ * Most themes utilize their own copy of node.html.twig. The default is located
+ * inside "core/modules/node/templates/node.html.twig". Look in there for the
+ * full list of variables.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - elements: An array of elements to display in view mode.
  *   - node: The node object.
  *   - view_mode: View mode; e.g., 'full', 'teaser'...
- *
- * @see node.tpl.php
  */
 function template_preprocess_node(&$variables) {
   $variables['view_mode'] = $variables['elements']['#view_mode'];
@@ -1140,25 +1163,18 @@ function template_preprocess_node(&$variables) {
   $variables['node'] = $variables['elements']['#node'];
   $node = $variables['node'];
 
-  $variables['date']      = format_date($node->created);
-  $variables['name']      = theme('username', array(
+  $variables['date'] = format_date($node->created);
+  // @todo Change 'name' to 'author' and also convert to a render array pending
+  //   http://drupal.org/node/1941286.
+  $variables['name'] = theme('username', array(
     'account' => $node,
     'link_attributes' => array('rel' => 'author'),
   ));
 
   $uri = $node->uri();
   $variables['node_url']  = url($uri['path'], $uri['options']);
-  $variables['label']     = check_plain($node->label());
-  $variables['page']      = $variables['view_mode'] == 'full' && node_is_page($node);
-
-  // Make useful flags and node data available.
-  // @todo: The comment properties only exist if comment.module is enabled, but
-  //   are documented in node.tpl.php, so we make sure that they are set.
-  //   Consider removing them.
-  $properties = array('type', 'comment_count', 'uid', 'created', 'promote', 'sticky', 'status', 'comment');
-  foreach ($properties as $property) {
-    $variables[$property] = isset($node->$property) ? $node->$property : NULL;
-  }
+  $variables['label'] = check_plain($node->label());
+  $variables['page'] = $variables['view_mode'] == 'full' && node_is_page($node);
 
   // Helpful $content variable for templates.
   $variables += array('content' => array());
@@ -1914,23 +1930,27 @@ function node_get_recent($number = 10) {
 }
 
 /**
- * Returns HTML for a list of recent content.
+ * Prepares variables for list of recent content templates.
  *
- * @param $variables
+ * Default template: node-recent-content.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - nodes: An array of recent node entities.
  *
- * @ingroup themeable
+ * @see template_preprocess_node_recent_content()
  */
-function theme_node_recent_block($variables) {
+function template_preprocess_node_recent_block(&$variables) {
   $rows = array();
-  $output = '';
 
   $l_options = array('query' => drupal_get_destination());
   foreach ($variables['nodes'] as $node) {
     $row = array();
     $row[] = array(
-      'data' => theme('node_recent_content', array('node' => $node)),
+      'data' => array(
+        '#theme' => 'node_recent_content',
+        '#node' => $node,
+      ),
       'class' => 'title-author',
     );
     if (node_access('update', $node)) {
@@ -1948,36 +1968,44 @@ function theme_node_recent_block($variables) {
     $rows[] = $row;
   }
 
+  $variables['table'] = array(
+    '#theme' => 'table',
+  );
+  $variables['more_link'] = array();
   if ($rows) {
-    $output = theme('table', array('rows' => $rows));
+    $variables['table']['#rows'] = $rows;
     if (user_access('access content overview')) {
-      $output .= theme('more_link', array('url' => 'admin/content', 'title' => t('Show more content')));
+      $variables['more_link'] = array(
+        '#theme' => 'more_link',
+        '#url' => 'admin/content',
+        '#title' => t('Show more content'),
+      );
     }
   }
-
-  return $output;
 }
 
 /**
- * Returns HTML for a recent node to be displayed in the recent content block.
+ * Prepares variables for recently created node templates.
  *
- * @param $variables
+ * Default template: node-recent-content.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - node: A node entity.
  *
- * @ingroup themeable
+ * @see template_preprocess_node_recent_block()
  */
-function theme_node_recent_content($variables) {
+function template_preprocess_node_recent_content(&$variables) {
   $node = $variables['node'];
-
-  $output = '<div class="node-title">';
-  $output .= l($node->label(), 'node/' . $node->nid);
-  $output .= theme('mark', array('type' => node_mark($node->nid, $node->changed)));
-  $output .= '</div><div class="node-author">';
-  $output .= theme('username', array('account' => user_load($node->uid)));
-  $output .= '</div>';
-
-  return $output;
+  $variables['link'] = l($node->label(), 'node/' . $node->nid);
+  $variables['mark'] = array(
+    '#theme' => 'mark',
+    '#type' => node_mark($node->nid, $node->changed),
+  );
+  $variables['username'] = array(
+    '#theme' => 'username',
+    '#account' => user_load($node->uid),
+  );
 }
 
 /**
