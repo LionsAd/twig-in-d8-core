@@ -77,6 +77,7 @@ function overlay_theme() {
     ),
     'overlay_disable_message' => array(
       'render element' => 'element',
+      'template' => 'overlay-disable-message',
     ),
   );
 }
@@ -441,44 +442,6 @@ function overlay_disable_message() {
 }
 
 /**
- * Returns the HTML for the message about how to disable the overlay.
- *
- * @param $variables
- *   An associative array with an 'element' element, which itself is an
- *   associative array containing:
- *   - profile_link: The link to this user's account.
- *   - dismiss_message_link: The link to dismiss the overlay.
- *
- * @ingroup themeable
- */
-function theme_overlay_disable_message($variables) {
-  $element = $variables['element'];
-
-  // Add CSS classes to hide the links from most sighted users, while keeping
-  // them accessible to screen-reader users and keyboard-only users. To assist
-  // screen-reader users, this message appears in both the parent and child
-  // documents, but only the one in the child document is part of the tab order.
-  foreach (array('profile_link', 'dismiss_message_link') as $key) {
-    $element[$key]['#options']['attributes']['class'][] = 'element-invisible';
-    if (overlay_get_mode() == 'child') {
-      $element[$key]['#options']['attributes']['class'][] = 'element-focusable';
-    }
-  }
-
-  // Render the links.
-  $output = drupal_render($element['profile_link']) . ' ' . drupal_render($element['dismiss_message_link']);
-
-  // Add a heading for screen-reader users. The heading doesn't need to be seen
-  // by sighted users.
-  $output = '<h3 class="element-invisible">' . t('Options for the administrative overlay') . '</h3>' . $output;
-
-  // Wrap in a container for styling.
-  $output = '<div id="overlay-disable-message" class="clearfix">' . $output . '</div>';
-
-  return $output;
-}
-
-/**
  * Implements hook_block_access().
  */
 function overlay_block_access($block) {
@@ -546,6 +509,35 @@ function template_preprocess_overlay(&$variables) {
   $variables['title'] = drupal_get_title();
   $variables['disable_overlay'] = overlay_disable_message();
   $variables['content_attributes']['class'][] = 'clearfix';
+}
+
+/**
+ * Prepares variables for overlay disable message templates.
+ *
+ * Default template: overlay-disable-message.html.twig.
+ *
+ * @param array $variables
+ *   An associative array with an 'element' element, which itself is an
+ *   associative array containing:
+ *   - profile_link: The link to this user's account.
+ *   - dismiss_message_link: The link to dismiss the overlay.
+ */
+function template_preprocess_overlay_disable_message(&$variables) {
+  $element = $variables['element'];
+
+  // Add CSS classes to hide the links from most sighted users, while keeping
+  // them accessible to screen-reader users and keyboard-only users. To assist
+  // screen-reader users, this message appears in both the parent and child
+  // documents, but only the one in the child document is part of the tab order.
+  foreach (array('profile_link', 'dismiss_message_link') as $key) {
+    $element[$key]['#options']['attributes']['class'][] = 'element-invisible';
+    if (overlay_get_mode() == 'child') {
+      $element[$key]['#options']['attributes']['class'][] = 'element-focusable';
+    }
+  }
+
+  $variables['profile_link'] = $element['profile_link'];
+  $variables['dismiss_link'] = $element['dismiss_message_link'];
 }
 
 /**
