@@ -2008,9 +2008,11 @@ function drupal_pre_render_table(array $element) {
 }
 
 /**
- * Returns HTML for a table.
+ * Prepares variables for table templates.
  *
- * @param $variables
+ * Default template: table.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - header: An array containing the table headers. Each element of the array
  *     can be either a localized string or an associative array with the
@@ -2090,52 +2092,63 @@ function drupal_pre_render_table(array $element) {
  *   - empty: The message to display in an extra row if table does not have any
  *     rows.
  */
-function theme_table($variables) {
-  $header = $variables['header'];
-  $rows = $variables['rows'];
-  $attributes = $variables['attributes'];
-  $caption = $variables['caption'];
-  $colgroups = $variables['colgroups'];
-  $sticky = $variables['sticky'];
-  $responsive = $variables['responsive'];
-  $empty = $variables['empty'];
+function template_preprocess_table(&$variables) {
+  // Flags.
+  $is_sticky = !empty($variables['sticky']);
+  $is_responsive = !empty($variables['responsive']);
+  $variables['attributes'] = new Attribute($variables['attributes']);
 
-  // Add sticky headers, if applicable.
-  if (count($header) && $sticky) {
-    drupal_add_library('system', 'drupal.tableheader');
-    // Add 'sticky-enabled' class to the table to identify it for JS.
-    // This is needed to target tables constructed by this function.
-    $attributes['class'][] = 'sticky-enabled';
+  // Table header.
+  if (!empty($variables['header']) && is_array($variables['header'])) {
+     $variables['header'] = array_values($variables['header']);
   }
-  // If the table has headers and it should react responsively to columns hidden
-  // with the classes represented by the constants RESPONSIVE_PRIORITY_MEDIUM
-  // and RESPONSIVE_PRIORITY_LOW, add the tableresponsive behaviors.
-  if (count($header) && $responsive) {
-    drupal_add_library('system', 'drupal.tableresponsive');
-    // Add 'responsive-enabled' class to the table to identify it for JS.
-    // This is needed to target tables constructed by this function.
-    $attributes['class'][] = 'responsive-enabled';
+  $headers = $variables['header'];
+
+  // Empty message.
+  // Set to new variable for convenient checks later.
+  $empty_message = (isset($variables['empty'])) ? $variables['empty'] : '';
+  // Remove 'empty' from template variables and set message to its own variable
+  // to make sure we don't conflict with Twig's reserved keyword of the same
+  // name.
+  unset($variables['empty']);
+  // @todo API change, rename this variable from 'empty' to 'empty_message'.
+  $variables['empty_message'] = $empty_message;
+
+  // Preprocess header.
+  if (!empty($variables['header'])) {
+    // Add sticky headers, if applicable.
+    if ($is_sticky) {
+      drupal_add_library('system', 'drupal.tableheader');
+      // Add 'sticky-enabled' class to the table to identify it for JS.
+      // This is needed to target tables constructed by this function.
+      $variables['attributes']['class'][] = 'sticky-enabled';
+    }
+
+    // If the table has headers and it should react responsively to columns
+    // hidden with the classes represented by the constants
+    // RESPONSIVE_PRIORITY_MEDIUM and RESPONSIVE_PRIORITY_LOW, add the
+    // tableresponsive behaviors.
+    if ($is_responsive) {
+      drupal_add_library('system', 'drupal.tableresponsive');
+      // Add 'responsive-enabled' class to the table to identify it for JS.
+      // This is needed to target tables constructed by this function.
+      $variables['attributes']['class'][] = 'responsive-enabled';
+    }
   }
 
-  $output = '<table' . new Attribute($attributes) . ">\n";
+  // Preprocess colgroups.
+  if (!empty($variables['colgroups'])) {
+    foreach ($variables['colgroups'] as $colgroup_key => $colgroup) {
+      $colgroup_attributes = new Attribute(array());
 
-  if (isset($caption)) {
-    $output .= '<caption>' . $caption . "</caption>\n";
-  }
-
-  // Format the table columns:
-  if (count($colgroups)) {
-    foreach ($colgroups as $number => $colgroup) {
-      $attributes = array();
-
-      // Check if we're dealing with a simple or complex column
+      // Support simple or complex colgroups.
       if (isset($colgroup['data'])) {
         foreach ($colgroup as $key => $value) {
           if ($key == 'data') {
             $cols = $value;
           }
           else {
-            $attributes[$key] = $value;
+            $colgroup_attributes[$key] = $value;
           }
         }
       }
@@ -2143,25 +2156,26 @@ function theme_table($variables) {
         $cols = $colgroup;
       }
 
-      // Build colgroup
-      if (is_array($cols) && count($cols)) {
-        $output .= ' <colgroup' . new Attribute($attributes) . '>';
-        $i = 0;
-        foreach ($cols as $col) {
-          $output .= ' <col' . new Attribute($col) . ' />';
+      // Set colgroup attributes.
+      $variables['colgroups'][$colgroup_key]['attributes'] = $colgroup_attributes;
+
+      // Set cols.
+      if (is_array($cols) && !empty($cols)) {
+        $variables['colgroups'][$colgroup_key]['cols'] = array();
+        foreach ($cols as $col_key => $col) {
+          $col_attributes = new Attribute($col);
+          $variables['colgroups'][$colgroup_key]['cols'][$col_key]['attributes'] = $col_attributes;
         }
-        $output .= " </colgroup>\n";
-      }
-      else {
-        $output .= ' <colgroup' . new Attribute($attributes) . " />\n";
       }
     }
   }
 
-  // Add the 'empty' row message if available.
-  if (!count($rows) && $empty) {
+  // Preprocess Empty message.
+  // Add one row spanning all columns for the 'empty' message if there are no
+  // data rows and the empty message is set.
+  if (empty($variables['rows']) && !empty($empty_message)) {
     $header_count = 0;
-    foreach ($header as $header_cell) {
+    foreach ($variables['header'] as $header_cell) {
       if (is_array($header_cell)) {
         $header_count += isset($header_cell['colspan']) ? $header_cell['colspan'] : 1;
       }
@@ -2169,96 +2183,174 @@ function theme_table($variables) {
         $header_count++;
       }
     }
-    $rows[] = array(array('data' => $empty, 'colspan' => $header_count, 'class' => array('empty', 'message')));
+    // Add one row for the empty message spanning all columns.
+    // @todo Leave rows empty, let template decide how to handle no rows, using
+    //   empty_message variable and optionally counting the columns to generate
+    //   an "empty" row spanning all columns like this.
+    $variables['rows'][] = array(array(
+      'data' => $empty_message,
+      'attributes' => new Attribute(array(
+        'colspan' => $header_count,
+        'class' => array('empty', 'message'),
+      ))
+    ));
   }
 
-  $responsive = array();
-  // Format the table header:
-  if (count($header)) {
-    $ts = tablesort_init($header);
-    // HTML requires that the thead tag has tr tags in it followed by tbody
-    // tags. Using ternary operator to check and see if we have any rows.
-    $output .= (count($rows) ? ' <thead><tr>' : ' <tr>');
-    $i = 0;
-    foreach ($header as $cell) {
-      $i++;
+  // Build up an associative array of responsive classes keyed by column.
+  $responsive_classes = array();
+
+  // Preprocess table header.
+  if (!empty($variables['header'])) {
+
+    // Initialize table sorting.
+    $ts = tablesort_init($variables['header']);
+
+    foreach ($variables['header'] as $col_key => $cell) {
+
+      // If the cell is not an array, make it one.
+      if (!is_array($cell)) {
+        $cell = array(
+          'data' => $cell,
+          'attributes' => array(),
+        );
+      }
+
+      // Create cell attributes.
+      if (!isset($cell['attributes'])) {
+        $cell['attributes'] = array();
+      }
+
       // Track responsive classes for each column as needed. Only the header
       // cells for a column are marked up with the responsive classes by a
       // module developer or themer. The responsive classes on the header cells
       // must be transferred to the content cells.
       if (!empty($cell['class']) && is_array($cell['class'])) {
         if (in_array(RESPONSIVE_PRIORITY_MEDIUM, $cell['class'])) {
-          $responsive[$i] =  RESPONSIVE_PRIORITY_MEDIUM;
+          $responsive_classes[$col_key] = RESPONSIVE_PRIORITY_MEDIUM;
         }
         elseif (in_array(RESPONSIVE_PRIORITY_LOW, $cell['class'])) {
-          $responsive[$i] =  RESPONSIVE_PRIORITY_LOW;
+          $responsive_classes[$col_key] = RESPONSIVE_PRIORITY_LOW;
         }
       }
-      $cell = tablesort_header($cell, $header, $ts);
-      $output .= _theme_table_cell($cell, TRUE);
+
+      // @todo Find out why we can use $variables['header'] here but must use
+      //   $headers for tablesort_cell() below.
+      $cell = tablesort_header($cell, $variables['header'], $ts);
+
+      // Move cell properties that are not data or attributes into attributes.
+      // Doing this after tablesort_header as it removes its sort and field
+      // values.
+      foreach ($cell as $key => $value) {
+        if ($key != 'data' && $key != 'attributes') {
+          $cell['attributes'][$key] = $value;
+        }
+      }
+
+      // Conversion to Attribute() happens last.
+      $cell['attributes'] = new Attribute($cell['attributes']);
+
+      // Flag the cell as a header.
+      $cell['header'] = TRUE;
+
+      // Update the header cell with attributes and properties.
+      // @todo Make sure we're not overwriting or losing any header element
+      //   variables.
+      $variables['header'][$col_key] = $cell;
     }
-    // Using ternary operator to close the tags based on whether or not there are rows
-    $output .= (count($rows) ? " </tr></thead>\n" : "</tr>\n");
   }
   else {
     $ts = array();
   }
 
-  // Format the table rows:
-  if (count($rows)) {
-    $output .= "<tbody>\n";
-    $flip = array('even' => 'odd', 'odd' => 'even');
+  // Preprocess table rows.
+  if (!empty($variables['rows'])) {
+
+    // Add odd/even class.
+    // @todo Replace this because zebras are for the zoo.
+    // @see http://drupal.org/node/1649780
+    $flip = array(
+      'even' => 'odd',
+      'odd' => 'even',
+    );
     $class = 'even';
-    foreach ($rows as $number => $row) {
-      // Check if we're dealing with a simple or complex row
+    foreach ($variables['rows'] as $row_key => $row) {
+      // Check if we're dealing with a simple or complex row.
       if (isset($row['data'])) {
         $cells = $row['data'];
         $no_striping = isset($row['no_striping']) ? $row['no_striping'] : FALSE;
 
         // Set the attributes array and exclude 'data' and 'no_striping'.
-        $attributes = $row;
-        unset($attributes['data']);
-        unset($attributes['no_striping']);
+        $row_attributes = $row;
+        unset($row_attributes['data']);
+        unset($row_attributes['no_striping']);
       }
       else {
         $cells = $row;
-        $attributes = array();
+        $row_attributes = array();
         $no_striping = FALSE;
       }
-      if (count($cells)) {
-        // Add odd/even class
-        if (!$no_striping) {
-          $class = $flip[$class];
-          $attributes['class'][] = $class;
-        }
 
-        // Build row
-        $output .= ' <tr' . new Attribute($attributes) . '>';
+      // Add odd/even class
+      if (!$no_striping) {
+        $class = $flip[$class];
+        $row_attributes['class'][] = $class;
+      }
+
+      if (!empty($cells)) {
+        // Build row.
+        $variables['rows'][$row_key] = array();
+        $variables['rows'][$row_key]['attributes'] = new Attribute($row_attributes);
+        $variables['rows'][$row_key]['cells'] = array();
         $i = 0;
         foreach ($cells as $cell) {
-          $i++;
+
+          // If the cell is not an array, make it one.
+          if (!is_array($cell)) {
+            $cell = array(
+              'data' => $cell,
+              'attributes' => array(),
+            );
+          }
+
+          // Create cell attributes.
+          if (!isset($cell['attributes'])) {
+            $cell['attributes'] = array();
+          }
+
           // Add active class if needed for sortable tables.
-          $cell = tablesort_cell($cell, $header, $ts, $i);
-          // Copy RESPONSIVE_PRIORITY_LOW/RESPONSIVE_PRIORITY_MEDIUM
-          // class from header to cell as needed.
-          if (isset($responsive[$i])) {
-            if (is_array($cell)) {
-              $cell['class'][] = $responsive[$i];
-            }
-            else {
-              $cell = array('data' => $cell, 'class' => $responsive[$i]);
+          // @todo Find out why we can't use $variables['header'] instead of
+          //   $headers here while we can in tablesort_header() above.
+          $cell = tablesort_cell($cell, $headers, $ts, $i);
+
+          // Move cell properties that are not data, attributes or header property
+          // into attributes.
+          foreach ($cell as $key => $value) {
+            if ($key != 'data' && $key != 'attributes' && $key != 'header') {
+              $cell['attributes'][$key] = $value;
             }
           }
-          $output .= _theme_table_cell($cell);
+
+          // Copy RESPONSIVE_PRIORITY_LOW/RESPONSIVE_PRIORITY_MEDIUM
+          // class from header to cell as needed.
+          if (isset($responsive_classes[$i])) {
+            $cell['attributes']['class'][] = $responsive_classes[$i];
+          }
+
+          // Conversion to Attribute() happens last.
+          $cell['attributes'] = new Attribute($cell['attributes']);
+
+          // Make sure that zeros get printed as '0'.
+          if (isset($cell['data']) && is_int($cell['data'])) {
+            $cell['data'] = (string) $cell['data'];
+          }
+
+          // Add the cell to the row.
+          $variables['rows'][$row_key]['cells'][$i] = $cell;
+          $i++;
         }
-        $output .= " </tr>\n";
       }
     }
-    $output .= "</tbody>\n";
   }
-
-  $output .= "</table>\n";
-  return $output;
 }
 
 /**
@@ -2564,47 +2656,6 @@ function theme_indentation($variables) {
 /**
  * @} End of "addtogroup themeable".
  */
-
-/**
- * Returns HTML output for a single table cell for theme_table().
- *
- * @param $cell
- *   Array of cell information, or string to display in cell.
- * @param bool $header
- *   TRUE if this cell is a table header cell, FALSE if it is an ordinary
- *   table cell. If $cell is an array with element 'header' set to TRUE, that
- *   will override the $header parameter.
- *
- * @return
- *   HTML for the cell.
- */
-function _theme_table_cell($cell, $header = FALSE) {
-  $attributes = '';
-
-  if (is_array($cell)) {
-    $data = isset($cell['data']) ? $cell['data'] : '';
-    // Cell's data property can be a string or a renderable array.
-    if (is_array($data)) {
-      $data = drupal_render($data);
-    }
-    $header |= isset($cell['header']);
-    unset($cell['data']);
-    unset($cell['header']);
-    $attributes = new Attribute($cell);
-  }
-  else {
-    $data = $cell;
-  }
-
-  if ($header) {
-    $output = "<th$attributes>$data</th>";
-  }
-  else {
-    $output = "<td$attributes>$data</td>";
-  }
-
-  return $output;
-}
 
 /**
  * Adds a default set of helper variables for variable processors and templates.
@@ -3185,6 +3236,7 @@ function drupal_common_theme() {
     ),
     'table' => array(
       'variables' => array('header' => NULL, 'rows' => NULL, 'attributes' => array(), 'caption' => NULL, 'colgroups' => array(), 'sticky' => TRUE, 'responsive' => TRUE, 'empty' => ''),
+      'template' => 'table',
     ),
     'meter' => array(
       'variables' => array('display_value' => NULL, 'form' => NULL, 'high' => NULL, 'low' => NULL, 'max' => NULL, 'min' => NULL, 'optimum' => NULL, 'value' => NULL, 'percentage' => NULL, 'attributes' => array()),
