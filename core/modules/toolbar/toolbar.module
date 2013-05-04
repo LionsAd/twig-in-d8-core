@@ -43,18 +43,19 @@ function toolbar_permission() {
 function toolbar_theme($existing, $type, $theme, $path) {
   $items['toolbar'] = array(
     'render element' => 'element',
+    'template' => 'toolbar',
   );
   $items['toolbar_item'] = array(
     'render element' => 'element',
+    'template' => 'toolbar-item',
   );
   $items['toolbar_tab_wrapper'] = array(
     'render element' => 'element',
+    'template' => 'toolbar-tab-wrapper',
   );
   $items['toolbar_tray_wrapper'] = array(
     'render element' => 'element',
-  );
-  $items['toolbar_tray_heading_wrapper'] = array(
-    'render element' => 'element',
+    'template' => 'toolbar-tray-wrapper',
   );
   return $items;
 }
@@ -214,24 +215,28 @@ function toolbar_pre_render($element) {
 }
 
 /**
- * Returns HTML that wraps the administration toolbar.
+ * Prepares variables for administration toolbar templates.
+ *
+ * Default template: toolbar.html.twig.
  *
  * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties and children of
  *     the tray. Properties used: #children, #attributes and #bar.
  */
-function theme_toolbar(&$variables) {
+function template_preprocess_toolbar(&$variables) {
   if (!empty($variables['element']['#children'])) {
     $element = $variables['element'];
-    $trays = '';
+    $variables['wrapper_attributes'] = new Attribute($element['#attributes']);
+    $variables['toolbar_attributes'] = new Attribute($element['#bar']['#attributes']);
+    $variables['toolbar_heading'] = $element['#bar']['#heading'];
+    $variables['children'] = $element['#children'];
+    $variables['trays'] = array();
     foreach (element_children($element) as $key) {
-      $trays .= drupal_render($element[$key]['tray']);
+      if (isset($element[$key]['tray'])) {
+        $variables['trays'][$key] = $element[$key]['tray'];
+      }
     }
-    return '<nav' . new Attribute($element['#attributes']) . '>'
-      . '<div' . new Attribute($element['#bar']['#attributes']) . '>'
-      . '<h2 class="element-invisible">' . $element['#bar']['#heading'] . '</h2>'
-      . $element['#children'] . '</div>' . $trays . '</nav>';
   }
 }
 
@@ -287,66 +292,61 @@ function toolbar_pre_render_item($element) {
     }
     // Add the standard theme_wrapper for trays.
     array_unshift($element['tray']['#theme_wrappers'], 'toolbar_tray_wrapper');
-    // If a #heading is provided for the tray, provided a #theme_wrapper
-    // function to append it.
-    if (!empty($element['tray']['#heading'])) {
-      array_unshift($element['tray']['#theme_wrappers'], 'toolbar_tray_heading_wrapper');
-    }
   }
 
   return $element;
 }
 
 /**
- * Implements template_preprocess_HOOK().
- */
-function template_preprocess_toolbar_tab_wrapper(&$variables) {
-  if (!isset($variables['element']['#wrapper_attributes'])) {
-    $variables['element']['#wrapper_attributes'] = array();
-  }
-  $variables['element']['#wrapper_attributes']['class'][] = 'tab';
-}
-
-/**
- * Returns HTML for a toolbar item.
+ * Prepares variables for toolbar item templates.
  *
- * This theme function only renders the tab portion of the toolbar item. The
- * tray portion will be rendered later.
+ * Prepares the tab portion of the toolbar item, tray portion is rendered later.
+ *
+ * Default template: toolbar-item.html.twig.
  *
  * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties and children of
  *     the tray. Property used: tab.
  *
- * @see toolbar_pre_render_item().
- * @see theme_toolbar().
+ * @see toolbar_pre_render_item()
  */
-function theme_toolbar_item(&$variables) {
-  return drupal_render($variables['element']['tab']);
+function template_preprocess_toolbar_item(&$variables) {
+  $variables['item'] = $variables['element']['tab'];
 }
 
 /**
- * Returns HTML for wrapping a toolbar tab.
+ * Prepares variables for toolbar tab wrapper templates.
  *
- * Toolbar tabs have a common styling and placement with the toolbar's bar area.
+ * Toolbar tabs have a common styling and placement within the toolbar's bar
+ * area.
+ *
+ * Default template: toolbar-tab-wrapper.html.twig.
  *
  * @param array $variables
  *   An associative array containing:
  *   - element: An associative array containing the properties and children of
  *     the tray. Properties used: #children and #attributes.
  */
-function theme_toolbar_tab_wrapper(&$variables) {
+function template_preprocess_toolbar_tab_wrapper(&$variables) {
+  $variables['attributes'] = $variables['children'] = NULL;
   if (!empty($variables['element']['#children'])) {
-    $element = $variables['element'];
-    return '<div' . new Attribute($element['#wrapper_attributes']) . '>' . $element['#children'] . '</div>';
+    if (!isset($variables['element']['#wrapper_attributes'])) {
+      $variables['element']['#wrapper_attributes'] = array();
+    }
+    $variables['element']['#wrapper_attributes']['class'][] = 'tab';
+    $variables['attributes'] = new Attribute($variables['element']['#wrapper_attributes']);
+    $variables['children'] = $variables['element']['#children'];
   }
 }
 
 /**
- * Returns HTML for wrapping a toolbar tray.
+ * Prepares variables for toolbar tray wrapper templates.
  *
- * Used in combination with theme_toolbar_tab() to create an
+ * Used in combination with template_preprocess_toolbar_tab() to create an
  * association between a link tag in the administration bar and a tray.
+ *
+ * Default template: toolbar-tray-wrapper.html.twig.
  *
  * @param array $variables
  *   An associative array containing:
@@ -354,25 +354,14 @@ function theme_toolbar_tab_wrapper(&$variables) {
  *     the tray. Properties used: #children, #toolbar_identifier and
  *     #attributes.
  */
-function theme_toolbar_tray_wrapper(&$variables) {
+function template_preprocess_toolbar_tray_wrapper(&$variables) {
+  $variables['label'] = $variables['children'] = NULL;
+  $variables['attributes'] = $variables['children'] = NULL;
   if (!empty($variables['element']['#children'])) {
     $element = $variables['element'];
-    return '<div' . new Attribute($element['#wrapper_attributes']) . '><div class="lining clearfix">' . $element['#children'] . '</div></div>';
-  }
-}
-
-/**
- * Returns HTML for prepending a heading to a toolbar tray.
- *
- * @param array $variables
- *   An associative array containing:
- *   - element: An associative array containing the properties and children of
- *     the tray. Properties used: #children and #heading.
- */
-function theme_toolbar_tray_heading_wrapper(&$variables) {
-  if (!empty($variables['element']['#children'])) {
-    $element = $variables['element'];
-    return '<h3 class="element-invisible">' . $element['#heading'] . '</h3>' . $element['#children'];
+    $variables['label'] = (!empty($element['#heading'])) ? $element['#heading'] : NULL;
+    $variables['attributes'] = new Attribute($element['#wrapper_attributes']);
+    $variables['children'] = $element['#children'];
   }
 }
 
