@@ -93,8 +93,8 @@ function user_theme() {
   return array(
     'user' => array(
       'render element' => 'elements',
-      'template' => 'user',
       'file' => 'user.pages.inc',
+      'template' => 'user',
     ),
     'user_admin_permissions' => array(
       'render element' => 'form',
@@ -104,15 +104,9 @@ function user_theme() {
       'render element' => 'form',
       'file' => 'user.admin.inc',
     ),
-    'user_permission_description' => array(
-      'variables' => array('permission_item' => NULL, 'hide' => NULL),
-      'file' => 'user.admin.inc',
-    ),
-    'user_signature' => array(
-      'variables' => array('signature' => NULL),
-    ),
     'username' => array(
       'variables' => array('account' => NULL),
+      'template' => 'username',
     ),
   );
 }
@@ -735,9 +729,17 @@ function user_template_preprocess_default_variables_alter(&$variables) {
 }
 
 /**
- * Preprocesses variables for theme_username().
+ * Prepares variables for username templates.
  *
- * Modules that make any changes to variables like 'name' or 'extra' must insure
+ * Default template: username.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - account: The user account to check access for
+ *     (Drupal\user\Plugin\Core\Entity\User).
+ *   - uid: The user uid number.
+ *
+ * Modules that make any changes to variables like 'name' or 'extra' must ensure
  * that the final string is safe to include directly in the output by using
  * check_plain() or filter_xss().
  *
@@ -810,41 +812,10 @@ function template_process_username(&$variables) {
     // \Drupal\Component\Utility\NestedArray::mergeDeep() for performance
     // reasons, since it is potentially called very often.
     $variables['link_options']['attributes'] = array_merge_recursive($variables['link_attributes'], $variables['attributes']);
+    $variables['link'] = l($variables['name'] . $variables['extra'], $variables['link_path'], $variables['link_options']);
   }
-}
 
-/**
- * Returns HTML for a username, potentially linked to the user's page.
- *
- * @param $variables
- *   An associative array containing:
- *   - account: The user object to format.
- *   - name: The user's name, sanitized.
- *   - extra: Additional text to append to the user's name, sanitized.
- *   - link_path: The path or URL of the user's profile page, home page, or
- *     other desired page to link to for more information about the user.
- *   - link_options: An array of options to pass to the l() function's $options
- *     parameter if linking the user's name to the user's page.
- *   - attributes: An array of attributes to instantiate the
- *     Drupal\Core\Template\Attribute class if not linking to the user's page.
- *
- * @see template_preprocess_username()
- * @see template_process_username()
- */
-function theme_username($variables) {
-  if (isset($variables['link_path'])) {
-    // We have a link path, so we should generate a link using l().
-    // Additional classes may be added as array elements like
-    // $variables['link_options']['attributes']['class'][] = 'myclass';
-    $output = l($variables['name'] . $variables['extra'], $variables['link_path'], $variables['link_options']);
-  }
-  else {
-    // Modules may have added important attributes so they must be included
-    // in the output. Additional classes may be added as array elements like
-    // $variables['attributes']['class'][] = 'myclass';
-    $output = '<span' . new Attribute($variables['attributes']) . '>' . $variables['name'] . $variables['extra'] . '</span>';
-  }
-  return $output;
+  $variables['attributes'] = new Attribute($variables['attributes']);
 }
 
 /**
@@ -1718,7 +1689,7 @@ function user_view_page($account) {
  * - $page['content']['#user']:
  *   The user account of the profile being viewed.
  *
- * To theme user profiles, copy modules/user/user.tpl.php
+ * To theme user profiles, copy modules/user/templates/user.html.twig
  * to your theme directory, and edit it as instructed in that file's comments.
  *
  * @param $account
@@ -2323,29 +2294,6 @@ function user_build_filter_query(SelectInterface $query) {
       $query->condition($filters[$key]['field'], $value);
     }
   }
-}
-
-/**
- * Returns HTML for a user signature.
- *
- * @param $variables
- *   An associative array containing:
- *   - signature: The user's signature.
- *
- * @ingroup themeable
- */
-function theme_user_signature($variables) {
-  $signature = $variables['signature'];
-  $output = '';
-
-  if ($signature) {
-    $output .= '<div class="clear">';
-    $output .= '<div>—</div>';
-    $output .= $signature;
-    $output .= '</div>';
-  }
-
-  return $output;
 }
 
 /**
