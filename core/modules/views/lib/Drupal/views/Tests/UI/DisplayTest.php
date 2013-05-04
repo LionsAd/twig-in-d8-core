@@ -251,7 +251,7 @@ class DisplayTest extends UITestBase {
     // Assert that the expected text is found in each area category.
     foreach ($areas as $type => $class) {
       $element = $this->xpath('//div[contains(@class, :class)]/div', array(':class' => $class));
-      $this->assertEqual((string) $element[0], "The selected display type does not utilize $type plugins");
+      $this->assertEqual((string) $element[0], t('The selected display type does not utilize @type plugins', array('@type' => $type)));
     }
   }
 
