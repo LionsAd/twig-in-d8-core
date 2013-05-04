@@ -7,6 +7,7 @@ function theme_test_theme($existing, $type, $theme, $path) {
   $items['theme_test'] = array(
     'file' => 'theme_test.inc',
     'variables' => array('foo' => ''),
+    'template' => 'theme-test',
   );
   $items['theme_test_template_test'] = array(
     'template' => 'theme_test.template_test',
@@ -16,6 +17,7 @@ function theme_test_theme($existing, $type, $theme, $path) {
   );
   $items['theme_test_foo'] = array(
     'variables' => array('foo' => NULL),
+    'template' => 'theme-test-foo',
   );
   return $items;
 }
@@ -164,11 +166,3 @@ function theme_test_preprocess_html(&$variables) {
   $variables['html_attributes']['theme_test_html_attribute'] = 'theme test html attribute value';
   $variables['attributes']['theme_test_body_attribute'] = 'theme test body attribute value';
 }
-
-/**
- * Theme function for testing theme('theme_test_foo').
- */
-function theme_theme_test_foo($variables) {
-  return $variables['foo'];
-}
-
