@@ -12,6 +12,7 @@ use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Uuid\Uuid;
 use Drupal\file\Plugin\Core\Entity\File;
 use Drupal\image\Plugin\Core\Entity\ImageStyle;
+use Drupal\Core\Template\Attribute;
 
 /**
  * Image style constant for user presets in the database.
@@ -204,6 +205,7 @@ function image_theme() {
         'title' => NULL,
         'attributes' => array(),
       ),
+      'template' => 'image-style',
     ),
 
     // Theme functions in image.admin.inc.
@@ -215,21 +217,33 @@ function image_theme() {
     ),
     'image_style_preview' => array(
       'variables' => array('style' => NULL),
+      'file' => 'image.admin.inc',
+      'template' => 'image-style-preview',
     ),
     'image_anchor' => array(
       'render element' => 'element',
+      'file' => 'image.admin.inc',
+      'template' => 'image-anchor',
     ),
     'image_resize_summary' => array(
       'variables' => array('data' => NULL),
+      'file' => 'image.admin.inc',
+      'template' => 'image-resize-summary',
     ),
     'image_scale_summary' => array(
       'variables' => array('data' => NULL),
+      'file' => 'image.admin.inc',
+      'template' => 'image-scale-summary',
     ),
     'image_crop_summary' => array(
       'variables' => array('data' => NULL),
+      'file' => 'image.admin.inc',
+      'template' => 'image-crop-summary',
     ),
     'image_rotate_summary' => array(
       'variables' => array('data' => NULL),
+      'file' => 'image.admin.inc',
+      'template' => 'image-rotate-summary',
     ),
 
     // Theme functions in image.field.inc.
@@ -238,6 +252,7 @@ function image_theme() {
     ),
     'image_formatter' => array(
       'variables' => array('item' => NULL, 'path' => NULL, 'image_style' => NULL),
+      'template' => 'image-formatter',
     ),
   );
 }
@@ -960,26 +975,21 @@ function image_effect_apply($image, $effect) {
 }
 
 /**
- * Returns HTML for an image using a specific image style.
+ * Prepare variables for image style templates.
  *
- * @param $variables
+ * Default template: image-style.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
- *   - style_name: The name of the style to be used to alter the original image.
- *   - uri: The path of the image file relative to the Drupal files directory.
- *     This function does not work with images outside the files directory nor
- *     with remotely hosted images. This should be in a format such as
- *     'images/image.jpg', or using a stream wrapper such as
- *     'public://images/image.jpg'.
- *   - width: The width of the source image (if known).
- *   - height: The height of the source image (if known).
- *   - alt: The alternative text for text-based browsers.
- *   - title: The title text is displayed when the image is hovered in some
- *     popular browsers.
- *   - attributes: Associative array of attributes to be placed in the img tag.
- *
- * @ingroup themeable
+ *   - width: The width of the image.
+ *   - height: The height of the image.
+ *   - style_name: The name of the image style to be applied.
+ *   - attributes: Additional attributes to apply to the image.
+ *   - uri: URI of the source image before styling.
+ *   - alt: Alternative text to be displayed instead of the image.
+ *   - title: Title of the image.
  */
-function theme_image_style($variables) {
+function template_preprocess_image_style(&$variables) {
   // Determine the dimensions of the styled image.
   $dimensions = array(
     'width' => $variables['width'],
@@ -994,9 +1004,30 @@ function theme_image_style($variables) {
   // Add in the image style name as an HTML class.
   $variables['attributes']['class'][] = 'image-style-' . drupal_html_class($variables['style_name']);
 
+  // Remove 'image-style' from the class array. This is added through
+  // template_preprocess() but we do not need it.
+  // @todo Remove after http://drupal.org/node/1938430 is resolved.
+  $variables['attributes']['class'] = array_diff($variables['attributes']['class'], array('image-style'));
+
   // Determine the URL for the styled image.
   $variables['uri'] = image_style_url($variables['style_name'], $variables['uri']);
-  return theme('image', $variables);
+
+  // Add the URL to the attributes.
+  $variables['attributes']['src'] = file_create_url($variables['uri']);
+
+  // @todo fix this
+  foreach (array('width', 'height', 'alt', 'title') as $key) {
+    if (isset($variables[$key])) {
+      $variables['attributes'][$key] = $variables[$key];
+    }
+  }
+
+  // create renderable image array
+  $variables['image'] = array(
+    '#theme' => 'image',
+    '#attributes' => $variables['attributes'],
+    '#uri' => $variables['uri'],
+  );
 }
 
 /**

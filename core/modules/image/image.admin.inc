@@ -5,6 +5,8 @@
  * Administration pages for image settings.
  */
 
+use Drupal\Core\Template\Attribute;
+
 /**
  * Menu callback; Listing of all current image styles.
  */
@@ -601,15 +603,15 @@ function theme_image_style_effects($variables) {
 }
 
 /**
- * Returns HTML for a preview of an image style.
+ * Prepare variables for image style preview templates.
  *
- * @param $variables
+ * Default template: image-style-preview.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
- *   - style: The image style array being previewed.
- *
- * @ingroup themeable
+ *   - style: The image style being previewed.
  */
-function theme_image_style_preview($variables) {
+function template_preprocess_image_style_preview(&$variables) {
   $style = $variables['style'];
 
   $sample_image = config('image.settings')->get('preview_image');
@@ -647,46 +649,47 @@ function theme_image_style_preview($variables) {
   $preview_attributes = array_intersect_key($preview_image, array('width' => '', 'height' => ''));
   $preview_attributes['style'] = 'width: ' . $preview_width . 'px; height: ' . $preview_height . 'px;';
 
-  // In the previews, timestamps are added to prevent caching of images.
-  $output = '<div class="image-style-preview preview clearfix">';
+  $variables['style_name'] = check_plain($style->label());
 
-  // Build the preview of the original image.
-  $original_url = file_create_url($original_path);
-  $output .= '<div class="preview-image-wrapper">';
-  $output .= t('original') . ' (' . l(t('view actual size'), $original_url) . ')';
-  $output .= '<div class="preview-image original-image" style="' . $original_attributes['style'] . '">';
-  $output .= '<a href="' . $original_url . '">' . theme('image', array('uri' => $original_path, 'alt' => t('Sample original image'), 'title' => '', 'attributes' => $original_attributes)) . '</a>';
-  $output .= '<div class="height" style="height: ' . $original_height . 'px"><span>' . $original_image['height'] . 'px</span></div>';
-  $output .= '<div class="width" style="width: ' . $original_width . 'px"><span>' . $original_image['width'] . 'px</span></div>';
-  $output .= '</div>'; // End preview-image.
-  $output .= '</div>'; // End preview-image-wrapper.
+  // Original image variables.
+  $variables['original_url'] = file_create_url($original_path);
+  $variables['original_attributes'] = new Attribute($original_attributes);
+  $original_attributes['src'] = file_create_url($original_path);
+  $original_attributes['alt'] = t('Sample original image');
+  $variables['original_image'] = array(
+    '#theme' => 'image',
+    '#attributes' => new Attribute($original_attributes),
+  );
+  $variables['original_image_height'] = $original_image['height'];
+  $variables['original_image_width'] = $original_image['width'];
+  $variables['original_height'] = $original_height;
+  $variables['original_width'] = $original_width;
 
-  // Build the preview of the image style.
-  $preview_url = file_create_url($preview_file) . '?cache_bypass=' . REQUEST_TIME;
-  $output .= '<div class="preview-image-wrapper">';
-  $output .= check_plain($style->label()) . ' (' . l(t('view actual size'), file_create_url($preview_file) . '?' . time()) . ')';
-  $output .= '<div class="preview-image modified-image" style="' . $preview_attributes['style'] . '">';
-  $output .= '<a href="' . file_create_url($preview_file) . '?' . time() . '">' . theme('image', array('uri' => $preview_url, 'alt' => t('Sample modified image'), 'title' => '', 'attributes' => $preview_attributes)) . '</a>';
-  $output .= '<div class="height" style="height: ' . $preview_height . 'px"><span>' . $preview_image['height'] . 'px</span></div>';
-  $output .= '<div class="width" style="width: ' . $preview_width . 'px"><span>' . $preview_image['width'] . 'px</span></div>';
-  $output .= '</div>'; // End preview-image.
-  $output .= '</div>'; // End preview-image-wrapper.
-
-  $output .= '</div>'; // End image-style-preview.
-
-  return $output;
+  // Preview image variables.
+  $variables['preview_url'] = file_create_url($preview_file) . '?' . time();
+  $variables['preview_attributes'] = new Attribute($preview_attributes);
+  $preview_attributes['src'] = file_create_url($preview_file) . '?cache_bypass=' . REQUEST_TIME;
+  $preview_attributes['alt'] = t('Sample modified image');
+  $variables['preview_image'] = array(
+    '#theme' => 'image',
+    '#attributes' => new Attribute($preview_attributes),
+  );
+  $variables['preview_image_height'] = $preview_image['height'];
+  $variables['preview_image_width'] = $preview_image['width'];
+  $variables['preview_height'] = $preview_height;
+  $variables['preview_width'] = $preview_width;
 }
 
 /**
- * Returns HTML for a 3x3 grid of checkboxes for image anchors.
+ * Prepares variables for image anchor templates.
  *
- * @param $variables
+ * Default template: image-anchor.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
- *   - element: A render element containing radio buttons.
- *
- * @ingroup themeable
+ *   - element: An associative array containing the image.
  */
-function theme_image_anchor($variables) {
+function template_preprocess_image_anchor(&$variables) {
   $element = $variables['element'];
 
   $rows = array();
@@ -694,73 +697,93 @@ function theme_image_anchor($variables) {
   foreach (element_children($element) as $n => $key) {
     $element[$key]['#attributes']['title'] = $element[$key]['#title'];
     unset($element[$key]['#title']);
-    $row[] = drupal_render($element[$key]);
+    $row[] = array(
+      'data' => $element[$key],
+    );
     if ($n % 3 == 3 - 1) {
       $rows[] = $row;
       $row = array();
     }
   }
-
-  return theme('table', array('header' => array(), 'rows' => $rows, 'attributes' => array('class' => array('image-anchor'))));
+  $variables['table'] = array(
+    '#theme' => 'table',
+    '#header' => array(),
+    '#rows' => $rows,
+    '#attributes' => array(
+      'class' => array('image-anchor'),
+    ),
+  );
 }
 
 /**
- * Returns HTML for a summary of an image resize effect.
+ * Prepares variables for image resize summary templates.
  *
- * @param $variables
+ * Default template: image-resize-summary.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - data: The current configuration for this resize effect.
- *
- * @ingroup themeable
  */
-function theme_image_resize_summary($variables) {
+function template_preprocess_image_resize_summary(&$variables) {
+  $output = '';
   $data = $variables['data'];
 
   if ($data['width'] && $data['height']) {
-    return check_plain($data['width']) . 'x' . check_plain($data['height']);
+    $output = check_plain($data['width']) . 'x' . check_plain($data['height']);
   }
   else {
-    return ($data['width']) ? t('width @width', array('@width' => $data['width'])) : t('height @height', array('@height' => $data['height']));
+    $output = ($data['width']) ? t('width @width', array('@width' => $data['width'])) : t('height @height', array('@height' => $data['height']));
   }
+
+  if(isset($data['upscale'])) {
+    $output .= ' (' . t('upscaling allowed') . ')';
+  }
+
+  $variables['summary'] = $output;
 }
 
 /**
- * Returns HTML for a summary of an image scale effect.
+ * Prepares variables for image scale summary templates.
  *
- * @param $variables
+ * Default template: image-scale-summary.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - data: The current configuration for this scale effect.
- *
- * @ingroup themeable
  */
-function theme_image_scale_summary($variables) {
-  $data = $variables['data'];
-  return theme('image_resize_summary', array('data' => $data)) . ' ' . ($data['upscale'] ? '(' . t('upscaling allowed') . ')' : '');
+function template_preprocess_image_scale_summary(&$variables) {
+  $variables['summary'] = array(
+    '#theme' => 'image_resize_summary',
+    '#data' => $variables['data'],
+  );
 }
 
 /**
- * Returns HTML for a summary of an image crop effect.
+ * Prepares variables for image crop summary templates.
  *
- * @param $variables
+ * Default template: image-crop-summary.html.twig
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - data: The current configuration for this crop effect.
- *
- * @ingroup themeable
  */
-function theme_image_crop_summary($variables) {
-  return theme('image_resize_summary', $variables);
+function template_preprocess_image_crop_summary(&$variables) {
+  $variables['summary'] = array(
+    '#theme' => 'image_resize_summary',
+    '#data' => $variables['data'],
+  );
 }
 
 /**
- * Returns HTML for a summary of an image rotate effect.
+ * Prepares varaibles for image rotate summary templates.
  *
- * @param $variables
+ * Default template: image-rotate-summary-html-twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - data: The current configuration for this rotate effect.
- *
- * @ingroup themeable
  */
-function theme_image_rotate_summary($variables) {
+function template_preprocess_image_rotate_summary(&$variables) {
   $data = $variables['data'];
-  return ($data['random']) ? t('random between -@degrees&deg and @degrees&deg', array('@degrees' => str_replace('-', '', $data['degrees']))) : t('@degrees&deg', array('@degrees' => $data['degrees']));
+  $variables['summary'] = ($data['random']) ? t('random between -@degrees&deg and @degrees&deg', array('@degrees' => str_replace('-', '', $data['degrees']))) : t('@degrees&deg', array('@degrees' => $data['degrees']));
 }

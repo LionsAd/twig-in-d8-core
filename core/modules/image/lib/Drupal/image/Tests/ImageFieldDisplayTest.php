@@ -98,9 +98,17 @@ class ImageFieldDisplayTest extends ImageFieldTestBase {
     $display_options['settings']['image_link'] = 'content';
     $display->setComponent($field_name, $display_options)
       ->save();
-    $default_output = l(theme('image', $image_info), 'node/' . $nid, array('html' => TRUE, 'attributes' => array('class' => 'active')));
     $this->drupalGet('node/' . $nid);
-    $this->assertRaw($default_output, 'Image linked to content formatter displaying correctly on full node view.');
+    $elements = $this->xpath(
+      '//a[@href=:path]/img[@src=:url and @alt="" and @width=:width and @height=:height]',
+      array(
+        ':path' => url('node/' . $nid),
+        ':url' => file_create_url($image_info['uri']),
+        ':width' => $image_info['width'],
+        ':height' => $image_info['height']
+      )
+    );
+    $this->assertEqual(count($elements), 1, 'Image linked to content formatter displaying correctly on full node view.');
 
     // Test the image style 'thumbnail' formatter.
     $display_options['settings']['image_link'] = '';
