@@ -1,0 +1,32 @@
+{#
+/**
+ * @file
+ * Bartik theme override for taxonomy term fields.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the containing element.
+ * - label_hidden: Whether to show the field label or not.
+ * - title_attributes: HTML attributes for the title.
+ * - label: The label for the field.
+ * - content_attributes: HTML attributes for the content.
+ * - items: List of all the field items.
+ * - item_attributes: HTML attributes for each item.
+ *
+ * @see template_preprocess_field()
+ * @see template_process_field()
+ *
+ * @ingroup themeable
+ */
+ @todo Remove even/odd striping once http://drupal.org/node/1649780 lands.
+#}
+<div class="{{ attributes.class }} clearfix"{{ attributes }}>
+  {% if not label_hidden %}
+    <h3 class="field-label">{{ label }}: </h3>
+  {% endif %}
+  <ul class="links">
+    {% for delta, item in items %}
+      {# @todo remove type casting once http://drupal.org/node/1970960 lands #}
+      <li class="taxonomy-term-reference-{{ "" ~ delta }}"{{ item_attributes[delta] }}>{{ item }}</li>
+    {% endfor %}
+  </ul>
+</div>
