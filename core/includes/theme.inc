@@ -2488,42 +2488,34 @@ function template_preprocess_feed_icon(&$variables) {
 }
 
 /**
- * Returns HTML for a generic HTML tag with attributes.
+ * Prepares variables for HTML tag templates.
  *
- * @param $variables
+ * Default template: html-tag.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
- *   - element: An associative array describing the tag:
- *     - #tag: The tag name to output. Typical tags added to the HTML HEAD:
- *       - meta: To provide meta information, such as a page refresh.
- *       - link: To refer to stylesheets and other contextual information.
- *       - script: To load JavaScript.
- *     - #attributes: (optional) An array of HTML attributes to apply to the
- *       tag.
- *     - #value: (optional) A string containing tag content, such as inline
- *       CSS.
- *     - #value_prefix: (optional) A string to prepend to #value, e.g. a CDATA
- *       wrapper prefix.
- *     - #value_suffix: (optional) A string to append to #value, e.g. a CDATA
- *       wrapper suffix.
+ *   - tag: The tag name to output. Typical tags added to the HTML HEAD:
+ *     - meta: Used to provide meta information, such as a page refresh.
+ *     - link: Used to refer to stylesheets and other contextual information.
+ *     - script: Used for loading JavaScript.
+ *   - attributes: (optional) An array of HTML attributes to apply to the
+ *     tag.
+ *   - value: (optional) A string containing tag content, such as inline CSS.
+ *   - value_prefix: (optional) A string to prepend to #value, e.g. a CDATA
+ *     wrapper prefix.
+ *   - value_suffix: (optional) A string to append to #value, e.g. a CDATA
+ *     wrapper suffix.
  */
-function theme_html_tag($variables) {
-  $element = $variables['element'];
-  $attributes = isset($element['#attributes']) ? new Attribute($element['#attributes']) : '';
-  if (!isset($element['#value'])) {
-    return '<' . $element['#tag'] . $attributes . " />\n";
-  }
-  else {
-    $output = '<' . $element['#tag'] . $attributes . '>';
-    if (isset($element['#value_prefix'])) {
-      $output .= $element['#value_prefix'];
+function template_preprocess_html_tag(&$variables) {
+  // Remove default 'html-tag' class from attributes, but leave other classes.
+  // @todo: Remove this hack once http://drupal.org/node/1938430 lands.
+  if (!empty($variables['attributes']['class'])) {
+    $variables['attributes']['class'] = array_diff($variables['attributes']['class'], array('html-tag'));
+    if (empty($variables['attributes']['class'])) {
+      unset($variables['attributes']['class']);
     }
-    $output .= $element['#value'];
-    if (isset($element['#value_suffix'])) {
-      $output .= $element['#value_suffix'];
-    }
-    $output .= '</' . $element['#tag'] . ">\n";
-    return $output;
   }
+  $variables['attributes'] = new Attribute($variables['attributes']);
 }
 
 /**
@@ -3223,7 +3215,8 @@ function drupal_common_theme() {
       'template' => 'indentation',
     ),
     'html_tag' => array(
-      'render element' => 'element',
+      'variables' => array('tag' => NULL, 'value' => NULL, 'attributes' => array(), 'value_prefix' => NULL, 'value_suffix' => NULL),
+      'template' => 'html-tag',
     ),
     // From theme.maintenance.inc.
     'maintenance_page' => array(
