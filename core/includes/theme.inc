@@ -2504,9 +2504,11 @@ function theme_progress_bar($variables) {
 }
 
 /**
- * Returns HTML for a meter.
+ * Prepares variables for meter templates.
  *
- * @param $variables
+ * Default template: meter.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - display_value: The textual representation of the meter bar.
  *   - form: A string specifying one or more forms to which the <meter> element
@@ -2523,27 +2525,19 @@ function theme_progress_bar($variables) {
  *   - attributes: Associative array of attributes to be placed in the meter
  *     tag.
  */
-function theme_meter($variables) {
+function template_preprocess_meter(&$variables) {
   $attributes = $variables['attributes'];
 
-  foreach (array('form', 'high', 'low', 'max', 'min', 'optimum', 'value') as $attribute) {
-    if (!empty($variables[$attribute])) {
+  foreach (array('form', 'high', 'low', 'max', 'min', 'optimum', 'value') as $key) {
+    if (isset($variables[$key])) {
       // This function was initially designed for the <meter> tag, but due to
       // the lack of browser and styling support for it, we're currently using
-      // it's attributes as HTML5 data attributes.
-      $attributes['data-' . $attribute] = $variables[$attribute];
+      // its attributes as HTML5 data attributes.
+      $attributes['data-' . $key] = $variables[$key];
     }
   }
 
-  $output = '<div' . new Attribute($attributes) . '>';
-  $output .= '  <div style="width: '. $variables['percentage'] .'%;" class="foreground"></div>';
-  $output .= "</div>\n";
-
-  if (!empty($variables['display_value'])) {
-    $output .= '<div class="percent">' . $variables['display_value'] . '</div>';
-  }
-
-  return $output;
+  $variables['attributes'] = new Attribute($attributes);
 }
 
 /**
@@ -3188,6 +3182,7 @@ function drupal_common_theme() {
     ),
     'meter' => array(
       'variables' => array('display_value' => NULL, 'form' => NULL, 'high' => NULL, 'low' => NULL, 'max' => NULL, 'min' => NULL, 'optimum' => NULL, 'value' => NULL, 'percentage' => NULL, 'attributes' => array()),
+      'template' => 'meter',
     ),
     'tablesort_indicator' => array(
       'variables' => array('style' => NULL),
