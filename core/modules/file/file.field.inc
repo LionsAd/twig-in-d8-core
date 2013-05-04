@@ -7,6 +7,7 @@
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Template\Attribute;
 
 /**
  * Implements hook_field_info().
@@ -638,41 +639,37 @@ function file_field_widget_submit($form, &$form_state) {
 }
 
 /**
- * Returns HTML for an individual file upload widget.
+ * Prepares variables for file form widget templates.
  *
- * @param $variables
+ * Default template: file-widget.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
- *   - element: A render element representing the widget.
- *
- * @ingroup themeable
+ *   - element: A render element representing the file.
+ *   - element_attributes: An Array of HTML attributes.
  */
-function theme_file_widget($variables) {
+function template_preprocess_file_widget(&$variables) {
   $element = $variables['element'];
-  $output = '';
-
-  // The "form-managed-file" class is required for proper Ajax functionality.
-  $output .= '<div class="file-widget form-managed-file clearfix">';
   if (!empty($element['fids']['#value'])) {
     // Add the file size after the file name.
     $file = reset($element['#files']);
     $element['file_' . $file->fid]['filename']['#markup'] .= ' <span class="file-size">(' . format_size($file->filesize) . ')</span> ';
   }
-  $output .= drupal_render_children($element);
-  $output .= '</div>';
-
-  return $output;
+  $variables['element'] = drupal_render_children($element);
+  // The "form-managed-file" class is required for proper Ajax functionality.
+  $variables['attributes'] = new Attribute(array('class' => array('file-widget', 'form-managed-file', 'clearfix')));
 }
 
 /**
- * Returns HTML for a group of file upload widgets.
+ * Prepares variables for multi file form widget templates.
  *
- * @param $variables
+ * Default template: file-widget-multiple.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - element: A render element representing the widgets.
- *
- * @ingroup themeable
  */
-function theme_file_widget_multiple($variables) {
+function template_preprocess_file_widget_multiple(&$variables) {
   $element = $variables['element'];
 
   // Special ID and classes for draggable tables.
@@ -754,6 +751,7 @@ function theme_file_widget_multiple($variables) {
     }
     $row[] = $weight;
     $row[] = $operations;
+
     $rows[] = array(
       'data' => $row,
       'class' => isset($widget['#attributes']['class']) ? array_merge($widget['#attributes']['class'], array('draggable')) : array('draggable'),
@@ -762,26 +760,28 @@ function theme_file_widget_multiple($variables) {
 
   drupal_add_tabledrag($table_id, 'order', 'sibling', $weight_class);
 
-  $output = '';
-  $output = empty($rows) ? '' : theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('id' => $table_id)));
-  $output .= drupal_render_children($element);
-  return $output;
+  $variables['table'] = array(
+    '#theme' => 'table',
+    '#header' => $headers,
+    '#rows' => $rows,
+    '#attributes' => array('id' => $table_id),
+  );
+  $variables['element'] = drupal_render_children($element);
 }
 
-
 /**
- * Returns HTML for help text based on file upload validators.
+ * Prepares variables for help text templates.
  *
- * @param $variables
+ * Default template: file-upload-help.html.twig
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - description: The normal description for this field, specified by the
  *     user.
  *   - upload_validators: An array of upload validators as used in
  *     $element['#upload_validators'].
- *
- * @ingroup themeable
  */
-function theme_file_upload_help($variables) {
+function template_preprocess_file_upload_help(&$variables) {
   $description = $variables['description'];
   $upload_validators = $variables['upload_validators'];
   $cardinality = $variables['cardinality'];
@@ -822,7 +822,7 @@ function theme_file_upload_help($variables) {
     }
   }
 
-  return implode('<br />', $descriptions);
+  $variables['descriptions'] = $descriptions;
 }
 
 /**
@@ -849,23 +849,35 @@ function file_field_find_file_reference_column($field) {
 }
 
 /**
- * Returns HTML for a file attachments table.
+ * Prepares variables for file attachments table templates.
  *
- * @param $variables
+ * Default template: file-formatter-table.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - items: An array of file attachments.
- *
- * @ingroup themeable
  */
-function theme_file_formatter_table($variables) {
+function template_preprocess_file_formatter_table(&$variables) {
   $header = array(t('Attachment'), t('Size'));
   $rows = array();
   foreach ($variables['items'] as $delta => $item) {
     $rows[] = array(
-      theme('file_link', array('file' => (object) $item)),
-      format_size($item['filesize']),
+      array(
+        'data' => array(
+          '#theme' => 'file_link',
+          '#file' => (object) $item,
+        ),
+      ),
+      array('data' => format_size($item['filesize'])),
     );
   }
 
-  return empty($rows) ? '' : theme('table', array('header' => $header, 'rows' => $rows));
+  $variables['content'] = array();
+  if (!empty($rows)) {
+    $variables['content'] = array(
+      '#theme' => 'table',
+      '#header' => $header,
+      '#rows' => $rows,
+    );
+  }
 }
