@@ -5,6 +5,8 @@
  * Theming for maintenance pages.
  */
 
+use Drupal\Core\Template\Attribute;
+
 /**
  * Sets up the theming system for maintenance page.
  *
@@ -107,42 +109,38 @@ function _theme_load_offline_registry($theme, $base_theme = NULL, $theme_engine 
 }
 
 /**
- * Returns HTML for a list of maintenance tasks to perform.
+ * Prepares variables for maintenance task list templates.
  *
- * @param $variables
+ * Default template: task-list.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - items: An associative array of maintenance tasks.
  *   - active: The key for the currently active maintenance task.
- *
- * @ingroup themeable
  */
-function theme_task_list($variables) {
+function template_preprocess_task_list(&$variables) {
   $t = get_t();
   $items = $variables['items'];
   $active = $variables['active'];
 
   $done = isset($items[$active]) || $active == NULL;
-  $output = '<h2 class="element-invisible">Installation tasks</h2>';
-  $output .= '<ol class="task-list">';
+  $tasks = array();
 
   foreach ($items as $k => $item) {
+    $tasks[$k]['item'] = $item;
+    $tasks[$k]['attributes'] = new Attribute(array('class' => array()));
     if ($active == $k) {
-      $class = 'active';
-      $status = '(' . $t('active') . ')';
+      $tasks[$k]['attributes']['class'][] = 'active';
+      $tasks[$k]['status'] = $t('active');
       $done = FALSE;
     }
     else {
-      $class = $done ? 'done' : '';
-      $status = $done ? '(' . $t('done') . ')' : '';
+      $tasks[$k]['attributes']['class'][] = $done ? 'done' : '';
+      $tasks[$k]['status'] = $done ? $t('done') : '';
     }
-    $output .= '<li';
-    $output .= ($class ? ' class="' . $class . '"' : '') . '>';
-    $output .= $item;
-    $output .= ($status ? '<span class="element-invisible">' . $status . '</span>' : '');
-    $output .= '</li>';
   }
-  $output .= '</ol>';
-  return $output;
+
+  $variables['tasks'] = $tasks;
 }
 
 /**
@@ -160,52 +158,43 @@ function theme_install_page($variables) {
 }
 
 /**
- * Returns HTML for a results report of an operation run by authorize.php.
+ * Prepares variables for authorize.php operation report templates.
  *
- * @param $variables
+ * This report displays the results of an operation run via authorize.php.
+ *
+ * Default template: authorize-report.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - messages: An array of result messages.
- *
- * @ingroup themeable
  */
-function theme_authorize_report($variables) {
+function template_preprocess_authorize_report(&$variables) {
   $messages = $variables['messages'];
-  $output = '';
+  // Top level attributes.
+  $attributes = $variables['attributes'] ? $variables['attributes'] : array();
+  $variables['attributes'] = new Attribute($attributes);
+
   if (!empty($messages)) {
-    $output .= '<div id="authorize-results">';
+    $lists = array();
+    $variables['attributes']['id'] = 'authorize-results';
     foreach ($messages as $heading => $logs) {
       $items = array();
       foreach ($logs as $number => $log_message) {
         if ($number === '#abort') {
           continue;
         }
-        $items[] = theme('authorize_message', array('message' => $log_message['message'], 'success' => $log_message['success']));
+        $items[] = array(
+          '#theme' => 'authorize_message',
+          '#message' => $log_message['message'],
+          '#success' => $log_message['success'],
+        );
       }
-      $output .= theme('item_list',  array('items' => $items, 'title' => $heading));
+      $lists[] = array(
+        '#theme' => 'item_list',
+        '#items' => $items,
+        '#title' => $heading,
+      );
     }
-    $output .= '</div>';
+    $variables['report'] = $lists;
   }
-  return $output;
-}
-
-/**
- * Returns HTML for a single log message from the authorize.php batch operation.
- *
- * @param $variables
- *   An associative array containing:
- *   - message: The log message.
- *   - success: A boolean indicating failure or success.
- *
- * @ingroup themeable
- */
-function theme_authorize_message($variables) {
-  $message = $variables['message'];
-  $success = $variables['success'];
-  if ($success) {
-    $item = array('data' => $message, 'class' => array('success'));
-  }
-  else {
-    $item = array('data' => '<strong>' . $message . '</strong>', 'class' => array('failure'));
-  }
-  return $item;
 }

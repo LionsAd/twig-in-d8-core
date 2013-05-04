@@ -3226,12 +3226,16 @@ function drupal_common_theme() {
     ),
     'task_list' => array(
       'variables' => array('items' => NULL, 'active' => NULL),
+      'preprocess functions' => array('template_preprocess_task_list'),
+      'template' => 'task-list',
     ),
     'authorize_message' => array(
       'variables' => array('message' => NULL, 'success' => TRUE),
+      'template' => 'authorize-message',
     ),
     'authorize_report' => array(
       'variables' => array('messages' => array()),
+      'template' => 'authorize-report',
     ),
     // From pager.inc.
     'pager' => array(
