@@ -20,6 +20,8 @@ class DisplayApiTest extends FieldUnitTestBase {
   function setUp() {
     parent::setUp();
 
+    $this->installSchema('user', array('role_permission'));
+
     // Create a field and instance.
     $this->field_name = 'test_field';
     $this->label = $this->randomName();
