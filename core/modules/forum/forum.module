@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Template\Attribute;
 use Drupal\entity\Plugin\Core\Entity\EntityDisplay;
 use Drupal\taxonomy\Plugin\Core\Entity\Term;
 
@@ -1105,7 +1106,12 @@ function template_preprocess_forum_topic_list(&$variables) {
   $header = '';
   foreach ($forum_topic_list_header as $cell) {
     $cell = tablesort_header($cell, $forum_topic_list_header, $ts);
-    $header .= _theme_table_cell($cell, TRUE);
+    // @todo Take care of this in the conversion to #type => table.
+    // @see http://drupal.org/node/1938906.
+    $_cell = $cell;
+    unset($_cell['data']);
+    $cell['attributes'] = new Attribute($_cell);
+    $header .= "<th" . $cell['attributes'] . ">" . drupal_render($cell['data']) . "</th>";
   }
   $variables['header'] = $header;
 

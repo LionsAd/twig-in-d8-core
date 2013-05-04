@@ -63,8 +63,8 @@ class TableTest extends WebTestBase {
       ),
     );
     $this->content = theme('table', array('header' => $header, 'rows' => array(), 'empty' => t('No strings available.')));
-    $this->assertRaw('<tr class="odd"><td colspan="3" class="empty message">No strings available.</td>', 'Correct colspan was set on empty message.');
-    $this->assertRaw('<thead><tr><th>Header 1</th>', 'Table header was printed.');
+    $this->assertTrue($this->xpath('//tr[@class="odd"]/td[@colspan="3" and @class="empty message"]'), 'Correct colspan was set on empty message.');
+    $this->assertTrue($this->xpath('//thead/tr/th'), 'Table header was printed.');
   }
 
   /**
@@ -80,5 +80,21 @@ class TableTest extends WebTestBase {
     $this->content = theme('table', array('rows' => $rows));
     $this->assertNoRaw('class="odd"', 'Odd/even classes were not added because $no_striping = TRUE.');
     $this->assertNoRaw('no_striping', 'No invalid no_striping HTML attribute was printed.');
+  }
+
+  /**
+   * Tests that the 'header' option in cells works correctly
+   */
+  function testThemeTableHeaderCellOption() {
+    $rows = array(
+      array(
+        array('data' => 1, 'header' => TRUE),
+        array('data' => 1, 'header' => FALSE),
+        array('data' => 1),
+      ),
+    );
+
+    $this->content = theme('table', array('rows' => $rows));
+    $this->assertRaw('<th>1</th><td>1</td><td>1</td>', 'The th and td tags was printed correctly.');
   }
 }
