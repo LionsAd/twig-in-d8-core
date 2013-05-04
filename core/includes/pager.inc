@@ -142,13 +142,15 @@ function pager_get_query_parameters() {
 }
 
 /**
- * Returns HTML for a query pager.
+ * Prepares variables for pager templates.
+ *
+ * Default template: pager.html.twig.
  *
  * Menu callbacks that display paged query results should call theme('pager') to
  * retrieve a pager control so that users can view other results. Format a list
  * of nearby pages with additional query results.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - tags: An array of labels for the controls in the pager.
  *   - element: An optional integer to distinguish between multiple pagers on
@@ -156,10 +158,8 @@ function pager_get_query_parameters() {
  *   - parameters: An associative array of query string parameters to append to
  *     the pager links.
  *   - quantity: The number of pages in the list.
- *
- * @ingroup themeable
  */
-function theme_pager($variables) {
+function template_preprocess_pager(&$variables) {
   $tags = $variables['tags'];
   $element = $variables['element'];
   $parameters = $variables['parameters'];
@@ -200,51 +200,55 @@ function theme_pager($variables) {
 
   // Create the "first" and "previous" links if we are not on the first page.
   if ($pager_page_array[$element] > 0) {
-    $li_first = theme('pager_link__first', array(
-      'text' => (isset($tags[0]) ? $tags[0] : t('« first')),
-      'page_new' => pager_load_array(0, $element, $pager_page_array),
-      'element' => $element,
-      'parameters' => $parameters,
-      'attributes' => array('rel' => 'first'),
-    ));
-    $li_previous = theme('pager_link__previous', array(
-      'text' => isset($tags[1]) ? $tags[1] : t('‹ previous'),
-      'page_new' => pager_load_array($pager_page_array[$element] - 1, $element, $pager_page_array),
-      'element' => $element,
-      'parameters' => $parameters,
-      'attributes' => array('rel' => 'prev'),
-    ));
+    $li_first = array(
+      '#theme' => 'pager_link__first',
+      '#text' => (isset($tags[0]) ? $tags[0] : t('« first')),
+      '#page_new' => pager_load_array(0, $element, $pager_page_array),
+      '#element' => $element,
+      '#parameters' => $parameters,
+      '#attributes' => array('rel' => 'first'),
+    );
+    $li_previous = array(
+      '#theme' => 'pager_link__previous',
+      '#text' => isset($tags[1]) ? $tags[1] : t('‹ previous'),
+      '#page_new' => pager_load_array($pager_page_array[$element] - 1, $element, $pager_page_array),
+      '#element' => $element,
+      '#parameters' => $parameters,
+      '#attributes' => array('rel' => 'prev'),
+    );
   }
 
   // Create the "last" and "next" links if we are not on the last page.
   if ($pager_page_array[$element] < ($pager_total[$element] - 1)) {
-    $li_next = theme('pager_link__next', array(
-      'text' => isset($tags[3]) ? $tags[3] : t('next ›'),
-      'page_new' => pager_load_array($pager_page_array[$element] + 1, $element, $pager_page_array),
-      'element' => $element,
-      'parameters' => $parameters,
-      'attributes' => array('rel' => 'next'),
-    ));
-    $li_last = theme('pager_link__last', array(
-      'text' => (isset($tags[4]) ? $tags[4] : t('last »')),
-      'page_new' => pager_load_array($pager_total[$element] - 1, $element, $pager_page_array),
-      'element' => $element,
-      'parameters' => $parameters,
-      'attributes' => array('rel' => 'last'),
-    ));
+    $li_next = array(
+      '#theme' => 'pager_link__next',
+      '#text' => isset($tags[3]) ? $tags[3] : t('next ›'),
+      '#page_new' => pager_load_array($pager_page_array[$element] + 1, $element, $pager_page_array),
+      '#element' => $element,
+      '#parameters' => $parameters,
+      '#attributes' => array('rel' => 'next'),
+    );
+    $li_last = array(
+      '#theme' => 'pager_link__last',
+      '#text' => (isset($tags[4]) ? $tags[4] : t('last »')),
+      '#page_new' => pager_load_array($pager_total[$element] - 1, $element, $pager_page_array),
+      '#element' => $element,
+      '#parameters' => $parameters,
+      '#attributes' => array('rel' => 'last'),
+    );
   }
 
   if ($pager_total[$element] > 1) {
     if ($li_first) {
       $items[] = array(
         '#wrapper_attributes' => array('class' => array('pager-first')),
-        '#markup' => $li_first,
+        'link' => $li_first,
       );
     }
     if ($li_previous) {
       $items[] = array(
         '#wrapper_attributes' => array('class' => array('pager-previous')),
-        '#markup' => $li_previous,
+        'link' => $li_previous,
       );
     }
 
@@ -261,13 +265,14 @@ function theme_pager($variables) {
         if ($i < $pager_current) {
           $items[] = array(
             '#wrapper_attributes' => array('class' => array('pager-item')),
-            '#markup' => theme('pager_link', array(
-              'text' => $i,
-              'page_new' => pager_load_array($i - 1, $element, $pager_page_array),
-              'element' => $element,
-              'interval' => ($pager_current - $i),
-              'parameters' => $parameters,
-            )),
+            'link' => array(
+              '#theme' => 'pager_link',
+              '#text' => $i,
+              '#page_new' => pager_load_array($i - 1, $element, $pager_page_array),
+              '#element' => $element,
+              '#interval' => ($pager_current - $i),
+              '#parameters' => $parameters,
+            ),
           );
         }
         if ($i == $pager_current) {
@@ -279,13 +284,14 @@ function theme_pager($variables) {
         if ($i > $pager_current) {
           $items[] = array(
             '#wrapper_attributes' => array('class' => array('pager-item')),
-            '#markup' => theme('pager_link', array(
-              'text' => $i,
-              'page_new' => pager_load_array($i - 1, $element, $pager_page_array),
-              'element' => $element,
-              'interval' => ($i - $pager_current),
-              'parameters' => $parameters,
-            )),
+            'link' => array(
+              '#theme' => 'pager_link',
+              '#text' => $i,
+              '#page_new' => pager_load_array($i - 1, $element, $pager_page_array),
+              '#element' => $element,
+              '#interval' => ($i - $pager_current),
+              '#parameters' => $parameters,
+            ),
           );
         }
       }
@@ -300,26 +306,30 @@ function theme_pager($variables) {
     if ($li_next) {
       $items[] = array(
         '#wrapper_attributes' => array('class' => array('pager-next')),
-        '#markup' => $li_next,
+        'link' => $li_next,
       );
     }
     if ($li_last) {
       $items[] = array(
         '#wrapper_attributes' => array('class' => array('pager-last')),
-        '#markup' => $li_last,
+        'link' => $li_last,
       );
     }
-    return '<h2 class="element-invisible">' . t('Pages') . '</h2>' . theme('item_list', array(
-      'items' => $items,
-      'attributes' => array('class' => array('pager')),
-    ));
+
+    $variables['items'] = array(
+      '#theme' => 'item_list',
+      '#items' => $items,
+      '#attributes' => array('class' => array('pager')),
+    );
   }
 }
 
 /**
- * Returns HTML for a link to a specific query result page.
+ * Prepares variables for pager link templates.
  *
- * @param $variables
+ * Default template: pager-link.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - text: The link text. Also used to figure out the title attribute of the
  *     link, if it is not provided in $variables['attributes']['title']; in
@@ -334,11 +344,9 @@ function theme_pager($variables) {
  *   - attributes: An associative array of HTML attributes to apply to the
  *     pager link.
  *
- * @see theme_pager()
- *
- * @ingroup themeable
+ * @see template_preprocess_pager()
  */
-function theme_pager_link($variables) {
+function template_preprocess_pager_link(&$variables) {
   $text = $variables['text'];
   $page_new = $variables['page_new'];
   $element = $variables['element'];
@@ -377,7 +385,7 @@ function theme_pager_link($variables) {
     }
   }
 
-  return l($text, current_path(), array('query' => $query, 'attributes' => $attributes));
+  $variables['link'] = l($text, current_path(), array('query' => $query, 'attributes' => $attributes));
 }
 
 /**
