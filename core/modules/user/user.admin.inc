@@ -331,13 +331,23 @@ function user_admin_permissions($form, $form_state, $rid = NULL) {
         $perm_item += array(
           'description' => '',
           'restrict access' => FALSE,
-          'warning' => !empty($perm_item['restrict access']) ? t('Warning: Give to trusted roles only; this permission has security implications.') : '',
         );
         $options[$perm] = '';
+        // Show the permission description.
+        if (!$hide_descriptions) {
+          $description = $perm_item['description'];
+          // Append warning message.
+          if (!empty($perm_item['restrict access'])) {
+            $description .= ' <em class="permission-warning">' . t('Warning: Give to trusted roles only; this permission has security implications.') . '</em>';
+          }
+        }
+        else {
+          $description = '';
+        }
         $form['permission'][$perm] = array(
           '#type' => 'item',
           '#markup' => $perm_item['title'],
-          '#description' => theme('user_permission_description', array('permission_item' => $perm_item, 'hide' => $hide_descriptions)),
+          '#description' => trim($description),
         );
         foreach ($role_names as $rid => $name) {
           // Builds arrays for checked boxes for each role
@@ -425,37 +435,6 @@ function theme_user_admin_permissions($variables) {
   $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'permissions')));
   $output .= drupal_render_children($form);
   return $output;
-}
-
-/**
- * Returns HTML for an individual permission description.
- *
- * @param $variables
- *   An associative array containing:
- *   - permission_item: An associative array representing the permission whose
- *     description is being themed. Useful keys include:
- *     - description: The text of the permission description.
- *     - warning: A security-related warning message about the permission (if
- *       there is one).
- *   - hide: A boolean indicating whether or not the permission description was
- *     requested to be hidden rather than shown.
- *
- * @ingroup themeable
- */
-function theme_user_permission_description($variables) {
-  if (!$variables['hide']) {
-    $description = array();
-    $permission_item = $variables['permission_item'];
-    if (!empty($permission_item['description'])) {
-      $description[] = $permission_item['description'];
-    }
-    if (!empty($permission_item['warning'])) {
-      $description[] = '<em class="permission-warning">' . $permission_item['warning'] . '</em>';
-    }
-    if (!empty($description)) {
-      return implode(' ', $description);
-    }
-  }
 }
 
 /**
