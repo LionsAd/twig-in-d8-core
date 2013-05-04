@@ -1,0 +1,21 @@
+{#
+/**
+ * @file
+ * Default theme implementation of an exposed filter form.
+ *
+ * Available variables:
+ * - form: The rendered exposed filter form.
+ * - items: A list of current filters.
+
+ * @see template_preprocess()
+ * @see template_preprocess_exposed_filters()
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="exposed-filters">
+  {% if items %}
+    {{ items }}
+  {% endif %}
+  {{ form }}
+</div>
