@@ -1,0 +1,26 @@
+{#
+/**
+ * @file
+ * Default theme implementation to list the available types for content
+ * creation.
+ *
+ * Available variables:
+ * - types: List of content types.
+ *   - add_link: Link to create a piece of content of this type.
+ *   - description: Description of this type of content.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_node_add_list()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if content %}
+  <ul class="admin-list">
+    {% for type in types %}
+      <li class="clearfix"><a href="{{ type.path }}"><span class="label">{{ type.label }}</span><div class="description">{{ type.description }}</div></a></li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>{{ 'You have not created any content types yet. Go to the <a href="@create-content">content type creation page</a> to add a new content type.'|t({'@create-content': url('admin/structure/types/add')}) }}</p>
+{% endif %}
