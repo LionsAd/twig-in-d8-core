@@ -1,0 +1,18 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a link to a file.
+ *
+ * Available variables:
+ * - attributes: Remaining HTML attributes of an element.
+ *   - attributes.class: HTML classes.
+ * - icon: An icon as produced by file-icon.html.twig.
+ * - link: A rendered hyperlink.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_file_link()
+ *
+ * @ingroup themeable
+ */
+#}
+<span class="{{ attributes.class }}"{{ attributes }}>{{ icon }} {{ link }}</span>
