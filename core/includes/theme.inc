@@ -1702,9 +1702,11 @@ function theme_link($variables) {
 }
 
 /**
- * Returns HTML for a set of links.
+ * Prepares variables for links templates.
  *
- * @param $variables
+ * Default template: links.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - links: An associative array of links to be themed. The key for each link
  *     is used as its CSS class. Each link should be itself an array, with the
@@ -1737,13 +1739,22 @@ function theme_link($variables) {
  *     http://juicystudio.com/article/screen-readers-display-none.php and
  *     http://www.w3.org/TR/WCAG-TECHS/H42.html for more information.
  */
-function theme_links($variables) {
+function template_preprocess_links(&$variables) {
   $language_url = language(LANGUAGE_TYPE_URL);
 
   $links = $variables['links'];
-  $attributes = $variables['attributes'];
-  $heading = $variables['heading'];
-  $output = '';
+  $heading = &$variables['heading'];
+
+  // Remove 'links' from the attributes array. This is added through
+  // template_preprocess() but we do not need it.
+  // @todo Remove after http://drupal.org/node/1938430 is resolved.
+  if (isset($variables['attributes']['class'][0]) && $variables['attributes']['class'][0] == 'links') {
+    unset($variables['attributes']['class'][0]);
+    if (empty($variables['attributes']['class'])) {
+      unset($variables['attributes']['class']);
+    }
+  }
+  $variables['attributes'] = new Attribute($variables['attributes']);
 
   if (!empty($links)) {
     // Prepend the heading to the list, if any.
@@ -1754,20 +1765,16 @@ function theme_links($variables) {
       }
       // Merge in default array properties into $heading.
       $heading += array(
-        'level' => 'h2',
         'attributes' => array(),
       );
       // @todo Remove backwards compatibility for $heading['class'].
       if (isset($heading['class'])) {
         $heading['attributes']['class'] = $heading['class'];
       }
-
-      $output .= '<' . $heading['level'] . new Attribute($heading['attributes']) . '>';
-      $output .= check_plain($heading['text']);
-      $output .= '</' . $heading['level'] . '>';
+      // Convert the attributes array into an attributes object.
+      $heading['attributes'] = new Attribute($heading['attributes']);
+      $heading['text'] = check_plain($heading['text']);
     }
-
-    $output .= '<ul' . new Attribute($attributes) . '>';
 
     $num_links = count($links);
     $i = 0;
@@ -1785,7 +1792,6 @@ function theme_links($variables) {
       if ($i == $num_links) {
         $class[] = 'last';
       }
-
       // Handle links.
       if (isset($link['href'])) {
         $is_current_path = ($link['href'] == current_path() || ($link['href'] == '<front>' && drupal_is_front_page()));
@@ -1794,45 +1800,37 @@ function theme_links($variables) {
           $class[] = 'active';
         }
         // @todo Reconcile Views usage of 'ajax' as a boolean with the rest of
-        //   core's usage of it as an array.
+        //  core's usage of it as an array.
+        $item = array(
+          '#type' => 'link',
+          '#title' => $link['title'],
+          '#href' => $link['href'],
+        );
         if (isset($link['ajax']) && is_array($link['ajax'])) {
-          // To attach Ajax behavior, render a link element, rather than just
-          // call l().
-          $link_element = array(
-            '#type' => 'link',
-            '#title' => $link['title'],
-            '#href' => $link['href'],
+          $item += array(
             '#ajax' => $link['ajax'],
             '#options' => array_diff_key($link, drupal_map_assoc(array('title', 'href', 'ajax'))),
           );
-          $item = drupal_render($link_element);
         }
         else {
-          // Pass in $link as $options, they share the same keys.
-          $item = l($link['title'], $link['href'], $link);
+          $item += array(
+            '#options' => array_diff_key($link, drupal_map_assoc(array('title', 'href'))),
+          );
         }
-      }
-      // Handle title-only text items.
-      else {
-        // Merge in default array properties into $link.
-        $link += array(
-          'html' => FALSE,
-        );
-        $item = ($link['html'] ? $link['title'] : check_plain($link['title']));
-        if (isset($link['attributes'])) {
-          $item = '<span' . new Attribute($link['attributes']) . '>' . $item . '</span>';
-        }
+        $variables['links'][$key]['link'] = $item;
       }
 
-      $output .= '<li' . new Attribute(array('class' => $class)) . '>';
-      $output .= $item;
-      $output .= '</li>';
+      // Handle text.
+      $text = (!empty($link['html']) ? $link['title'] : check_plain($link['title']));
+      $variables['links'][$key]['text'] = $text;
+      if (isset($link['attributes'])) {
+        $variables['links'][$key]['text_attributes'] = new Attribute($link['attributes']);
+      }
+
+      // Handle list item attributes.
+      $variables['links'][$key]['attributes'] = new Attribute(array('class' => $class));
     }
-
-    $output .= '</ul>';
   }
-
-  return $output;
 }
 
 /**
@@ -3204,6 +3202,7 @@ function drupal_common_theme() {
     ),
     'links' => array(
       'variables' => array('links' => array(), 'attributes' => array('class' => array('links')), 'heading' => array()),
+      'template' => 'links',
     ),
     'dropbutton_wrapper' => array(
       'render element' => 'element',
