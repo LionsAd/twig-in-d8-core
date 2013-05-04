@@ -668,17 +668,24 @@ function template_preprocess_views_view_table(&$vars) {
 }
 
 /**
- * Display a view as a grid style.
+ * Prepares variables for Views grid style templates.
+ *
+ * Default template: views-view-grid.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: The View object.
+ *   - rows: @todo.
  */
 function template_preprocess_views_view_grid(&$vars) {
-  $view     = $vars['view'];
-  $result   = $view->result;
-  $options  = $view->style_plugin->options;
-  $handler  = $view->style_plugin;
+  $view = $vars['view'];
+  $result = $view->result;
+  $options = $view->style_plugin->options;
+  $handler = $view->style_plugin;
   $default_row_class = isset($options['default_row_class']) ? $options['default_row_class'] : TRUE;
   $row_class_special = isset($options['row_class_special']) ? $options['row_class_special'] : TRUE;
 
-  $columns  = $options['columns'];
+  $columns = $options['columns'];
   $vars['attributes']['class'][] = 'views-view-grid cols-' . $columns;
 
   $rows = array();
@@ -777,16 +784,7 @@ function template_preprocess_views_view_grid(&$vars) {
   }
   $vars['rows'] = $rows;
   if (!empty($handler->options['summary'])) {
-    $vars['attributes_array'] = array('summary' => $handler->options['summary']);
-  }
-  // If the table has headers and it should react responsively to columns hidden
-  // with the classes represented by the constants RESPONSIVE_PRIORITY_MEDIUM
-  // and RESPONSIVE_PRIORITY_LOW, add the tableresponsive behaviors.
-  if (count($vars['header']) && $responsive) {
-    $vars['view']->element['#attached']['library'][] = array('system', 'drupal.tableresponsive');
-    // Add 'responsive-enabled' class to the table to identify it for JS.
-    // This is needed to target tables constructed by this function.
-    $vars['attributes']['class'][] = 'responsive-enabled';
+    $vars['attributes']['summary'] = $handler->options['summary'];
   }
 }
 
