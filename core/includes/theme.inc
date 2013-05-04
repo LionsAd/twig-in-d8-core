@@ -1604,6 +1604,7 @@ function template_preprocess_datetime(&$variables) {
 }
 
 /**
+<<<<<<< HEAD
  * Returns HTML for a date / time.
  *
  * @param $variables
@@ -1641,6 +1642,9 @@ function theme_datetime($variables) {
 
 /**
  * Prepares variables for status message templates.
+=======
+ * Returns HTML for status and/or error messages, grouped by type.
+>>>>>>> Issue Convert theme_datetime() to Twig [#1939080].
  *
  * Default template: status-messages.html.twig.
  *
