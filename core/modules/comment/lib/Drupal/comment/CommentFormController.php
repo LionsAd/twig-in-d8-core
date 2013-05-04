@@ -91,7 +91,8 @@ class CommentFormController extends EntityFormControllerNG {
     elseif ($user->uid) {
       $form['author']['name']['#type'] = 'item';
       $form['author']['name']['#value'] = $form['author']['name']['#default_value'];
-      $form['author']['name']['#markup'] = theme('username', array('account' => $user));
+      $form['author']['name']['#theme'] = 'username';
+      $form['author']['name']['#account'] = $user;
     }
 
     // Add author e-mail and homepage fields depending on the current user.
@@ -258,7 +259,6 @@ class CommentFormController extends EntityFormControllerNG {
    */
   public function submit(array $form, array &$form_state) {
     $comment = parent::submit($form, $form_state);
-
     // If the comment was posted by a registered user, assign the author's ID.
     // @todo Too fragile. Should be prepared and stored in comment_form()
     // already.
