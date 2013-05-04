@@ -30,8 +30,12 @@ th.simpletest_test {
   background-color: #edf5fa;
   color: #494949;
 }
+.simpletest-test-select .form-item {
+  margin-bottom: 0;
+  margin-top: 0;
+}
 
-table#simpletest-form-table tr.simpletest-group label {
+#simpletest-form-table tr.simpletest-group label {
   display: inline;
 }
 

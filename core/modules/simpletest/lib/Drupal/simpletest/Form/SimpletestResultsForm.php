@@ -111,7 +111,6 @@ class SimpletestResultsForm implements FormInterface, ControllerInterface {
       '#title' => t('Results'),
     );
     $form['result']['summary'] = $summary = array(
-      '#theme' => 'simpletest_result_summary',
       '#pass' => 0,
       '#fail' => 0,
       '#exception' => 0,
@@ -162,7 +161,7 @@ class SimpletestResultsForm implements FormInterface, ControllerInterface {
         $form['result']['summary']['#' . $assertion->status]++;
       }
       $form['result']['results'][$group]['table'] = array(
-        '#theme' => 'table',
+        '#type' => 'table',
         '#header' => $header,
         '#rows' => $rows,
       );
@@ -173,10 +172,24 @@ class SimpletestResultsForm implements FormInterface, ControllerInterface {
 
       // Store test group (class) as for use in filter.
       $filter[$group_summary['#ok'] ? 'pass' : 'fail'][] = $group;
+
+      // Render summary information.
+      $group_summary += array(
+        '#prefix' => '<div class="simpletest-' . ($group_summary['#ok'] ? 'pass' : 'fail') . '">',
+        '#markup' => _simpletest_format_summary_line($group_summary),
+        '#suffix' => '</div>',
+      );
     }
 
     // Overal summary status.
     $form['result']['summary']['#ok'] = $form['result']['summary']['#fail'] + $form['result']['summary']['#exception'] == 0;
+
+    // Render overall summary.
+    $form['result']['summary'] += array(
+      '#prefix' => '<div class="simpletest-' . ($form['result']['summary']['#ok'] ? 'pass' : 'fail') . '">',
+      '#markup' => _simpletest_format_summary_line($form['result']['summary']),
+      '#suffix' => '</div>',
+    );
 
     // Actions.
     $form['#action'] = url('admin/config/development/testing/results/re-run');
