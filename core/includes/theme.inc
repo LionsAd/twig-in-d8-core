@@ -1680,25 +1680,86 @@ function theme_status_messages($variables) {
   return $output;
 }
 
-/**
- * Returns HTML for a link.
- *
- * This is a wrapper around l() to allow for more flexible link themeing.
- *
- * Where performance is more important than theme flexibility, Drupal code that
- * outputs a link should call the l() function directly, as #theme 'link'
- * implementations have a measurable performance impact.
- *
- * @param $variables
- *   An associative array containing the keys 'text', 'path', and 'options'.
- *   See the l() function for information about these variables. However, unlike
- *   'text' in l(), both render arrays and strings are supported here.
- *
- * @see l()
- */
-function theme_link($variables) {
+
+ /**
+  * Prepares variables for link templates.
+  *
+  * Default template: link.html.twig.
+  *
+  * Where performance is more important than theme flexibility, Drupal code that
+  * outputs a link should call the l() function directly, as #theme 'link'
+  * implementations have a measurable performance impact.
+  *
+  * @param array $variables
+  *   An associative array containing the keys 'text', 'path', and 'options'.
+  *   See the l() function for information about these variables. However,
+  *   unlike 'text' in l(), both render arrays and strings are supported here.
+  *
+  * @see l()
+  */
+function template_preprocess_link(&$variables) {
+  // Merge in defaults.
+  $variables['options'] += array(
+    'attributes' => array(),
+    'query' => array(),
+    'html' => FALSE,
+  );
+
+  // Use the same static caching found in l()
+  static $drupal_static_fast;
+  if (!isset($drupal_static_fast['active'])) {
+    $drupal_static_fast['active'] = &drupal_static(__FUNCTION__);
+  }
+  $active = &$drupal_static_fast['active'];
+  if (!isset($active)) {
+    $active = array(
+      'path' => current_path(),
+      'front_page' => drupal_is_front_page(),
+      'language' => language(LANGUAGE_TYPE_URL)->langcode,
+      'query' => Drupal::service('request')->query->all(),
+    );
+  }
+
+  // Determine whether this link is "active', meaning that it links to the
+  // current page. We stop checking "active" conditions as soon as possible to
+  // ensure speed.
+  // An active link's path is equal to the current path.
+  $variables['url_is_active'] = ($variables['path'] == $active['path'] || ($variables['path'] == '<front>' && $active['front_page']))
+  // The language of an active link is equal to the current language.
+  && (empty($variables['options']['language']) || $variables['options']['language']->langcode == $active['language'])
+  // The query parameters of an active link are equal to the current parameters.
+  && ($variables['options']['query'] == $active['query']);
+
+  // Add the "active" class if appropriate.
+  if ($variables['url_is_active']) {
+    $variables['options']['attributes']['class'][] = 'active';
+  }
+
+  // Remove all HTML and PHP tags from a tooltip, calling expensive strip_tags()
+  // only when a quick strpos() gives suspicion tags are present.
+  if (isset($variables['options']['attributes']['title']) && strpos($variables['options']['attributes']['title'], '<') !== FALSE) {
+    $variables['options']['attributes']['title'] = strip_tags($variables['options']['attributes']['title']);
+  }
+
+  // Allow other modules to modify the structure of the link.
+  drupal_container()->get('module_handler')->alter('link', $variables);
+
+  // Move attributes out of options.  url() doesn't need them and they make more
+  // sense as top level variables in templates.
+  $attributes = array();
+  if (isset($variables['options']['attributes'])) {
+    $attributes = $variables['options']['attributes'];
+    unset($variables['options']['attributes']);
+  }
+  $variables['attributes'] = new Attribute($attributes);
+
+  // The result of url() is a plain-text URL. Because we are using it here
+  // in an HTML argument context, we need to encode it properly.
+  $variables['url'] = check_plain(url($variables['path'], $variables['options']));
+
+  // Sanitize the link text if necessary.
   $rendered_text = is_array($variables['text']) ? drupal_render($variables['text']) : $variables['text'];
-  return l($rendered_text, $variables['path'], $variables['options']);
+  $variables['text'] = ($variables['options']['html']) ? $rendered_text : check_plain($rendered_text);
 }
 
 /**
@@ -3158,6 +3219,7 @@ function drupal_common_theme() {
     ),
     'link' => array(
       'variables' => array('text' => NULL, 'path' => NULL, 'options' => array()),
+      'template' => 'link',
     ),
     'links' => array(
       'variables' => array('links' => array(), 'attributes' => array('class' => array('links')), 'heading' => array()),
