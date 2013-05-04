@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a local task link.
+ *
+ * Available variables:
+ * - wrapper_attributes: HTML attributes for the wrapper element.
+ * - link: The rendered link (<a> tag).
+ *
+ * Note: This template renders the content for each individual task item in
+ * menu-local-tasks.html.twig.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_menu_local_task()
+ *
+ * @ingroup themeable
+ */
+#}
+{% spaceless %}
+<li{{ wrapper_attributes }}>
+  {{ link }}
+  {% if active %}
+    {# Add text to indicate active tab for non-visual users. #}
+    <span class="element-invisible">({{ 'active tab'|t }})</span>
+  {% endif %}
+</li>
+{% endspaceless %}
