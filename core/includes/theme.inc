@@ -2603,6 +2603,7 @@ function template_preprocess_more_link(&$variables) {
 }
 
 /**
+<<<<<<< HEAD
  * Returns HTML for a progress bar.
  *
  * Note that the core Batch API uses this only for non-JavaScript batch jobs.
@@ -2624,6 +2625,9 @@ function theme_progress_bar($variables) {
 
 /**
  * Prepares variables for meter templates.
+=======
+ * Returns HTML for a meter.
+>>>>>>> Issue Convert theme_progress_bar() to Twig [#1939100].
  *
  * Default template: meter.html.twig.
  *
@@ -3317,6 +3321,7 @@ function drupal_common_theme() {
     ),
     'progress_bar' => array(
       'variables' => array('percent' => NULL, 'message' => NULL),
+      'template' => 'progress-bar',
     ),
     'indentation' => array(
       'variables' => array('size' => 1),
