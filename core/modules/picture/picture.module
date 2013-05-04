@@ -163,6 +163,7 @@ function picture_theme() {
         'attributes' => array(),
         'breakpoints' => array(),
       ),
+      'template' => 'picture',
     ),
     'picture_formatter' => array(
       'variables' => array(
@@ -171,20 +172,24 @@ function picture_theme() {
         'image_style' => NULL,
         'breakpoints' => array(),
       ),
+      'template' => 'picture-formatter',
     ),
     'picture_source' => array(
       'variables' => array(
         'src' => NULL,
         'srcset' => NULL,
-        'dimension' => NULL,
+        'dimensions' => array(),
         'media' => NULL,
       ),
+      'template' => 'picture-source',
     ),
   );
 }
 
 /**
- * Returns HTML for a picture field formatter.
+ * Prepares variables for picture formatter templates.
+ *
+ * Default template: picture-formatter.html.twig.
  *
  * @param array $variables
  *   An associative array containing:
@@ -192,53 +197,63 @@ function picture_theme() {
  *   - image_style: An optional image style.
  *   - path: An optional array containing the link 'path' and link 'options'.
  *   - breakpoints: An array containing breakpoints.
- *
- * @ingroup themeable
  */
-function theme_picture_formatter($variables) {
+function template_preprocess_picture_formatter(&$variables) {
   if (!isset($variables['breakpoints']) || empty($variables['breakpoints'])) {
-    return theme('image_formatter', $variables);
+    $variables['image'] = array(
+      '#theme' => 'image_formatter',
+      '#item' => $variables['item'],
+      '#image_style' => $variables['image_style'],
+      '#path' => $variables['path'],
+    );
   }
+  else {
+    $item = $variables['item'];
 
-  $item = $variables['item'];
+    // Do not output an empty 'title' attribute.
+    if (isset($item['title']) && drupal_strlen($item['title']) == 0) {
+      unset($item['title']);
+    }
 
-  // Do not output an empty 'title' attribute.
-  if (isset($item['title']) && drupal_strlen($item['title']) == 0) {
-    unset($item['title']);
+    $variables['image'] = array(
+      '#theme' => 'picture',
+      '#style_name' => $variables['image_style'],
+      '#path' => $item['uri'],
+      '#width' => $item['width'],
+      '#height' => $item['height'],
+      '#breakpoints' => $variables['breakpoints'],
+      '#alt' => isset($item['alt']) ? $item['alt'] : NULL,
+      '#title' => isset($item['title']) ? $item['title'] : NULL,
+      '#attributes' => isset($item['attributes']) ? $item['attributes'] : NULL,
+    );
+
+    if (isset($variables['path']['path'])) {
+      $variables['path']['attributes'] = isset($variables['path']['options']['attributes']) ? new Attribute($variables['path']['options']['attributes']) : new Attribute();
+      $options = isset($variables['path']['options']) ? $variables['path']['options'] : array();
+      $variables['path']['path'] = url($variables['path']['path'], $options);
+    }
   }
-
-  $item['style_name'] = $variables['image_style'];
-  $item['breakpoints'] = $variables['breakpoints'];
-
-  if (!isset($item['path']) && isset($variables['uri'])) {
-    $item['path'] = $variables['uri'];
-  }
-  $output = theme('picture', $item);
-
-  if (isset($variables['path']['path'])) {
-    $path = $variables['path']['path'];
-    $options = isset($variables['path']['options']) ? $variables['path']['options'] : array();
-    $options['html'] = TRUE;
-    $output = l($output, $path, $options);
-  }
-  return $output;
 }
 
 /**
- * Returns HTML for a picture.
+ * Prepares variables for picture templates.
+ *
+ * Default template: picture.html.twig.
  *
  * @param $variables
  *   An associative array containing:
- *   - uri: Either the path of the image file (relative to base_path()) or a
+ *   - path: Either the path of the image file (relative to base_path()) or a
  *     full URL.
  *   - width: The width of the image (if known).
  *   - height: The height of the image (if known).
- *   - alt: The alternative text for text-based browsers.
  *   - breakpoints: An array containing breakpoints.
- *
- * @ingroup themeable
+ *   - alt: The alternative text for text-based browsers.
+ *   - title: The title text is displayed when the image is hovered in some
+ *     popular browsers.
+ *   - attributes: Attributes for the picture element.
+ *   - style_name: The name of the style to be used to alter the original image.
  */
-function theme_picture($variables) {
+function template_preprocess_picture(&$variables) {
   // Make sure that width and height are proper values
   // If they exists we'll output them
   // @see http://www.w3.org/community/respimg/2012/06/18/florians-compromise/
@@ -251,13 +266,13 @@ function theme_picture($variables) {
     unset($variables['height']);
   }
 
-  $sources = array();
-  $output = array();
+  $variables['sources'] = array();
 
   // Fallback image, output as source with media query.
-  $sources[] = array(
-    'src' => image_style_url($variables['style_name'], $variables['uri']),
-    'dimensions' => picture_get_image_dimensions($variables),
+  $variables['sources'][] = array(
+    '#theme' => 'picture_source',
+    '#src' => image_style_url($variables['style_name'], $variables['path']),
+    '#dimensions' => picture_get_image_dimensions($variables),
   );
 
   // All breakpoints and multipliers.
@@ -274,50 +289,54 @@ function theme_picture($variables) {
 
       // Only one image, use src.
       if (count($new_sources) == 1) {
-        $sources[] = array(
-          'src' => image_style_url($new_sources[0]['style_name'], $new_sources[0]['uri']),
-          'dimensions' => picture_get_image_dimensions($new_sources[0]),
-          'media' => $breakpoint->mediaQuery,
+        $variables['sources'][] = array(
+          '#theme' => 'picture_source',
+          '#src' => image_style_url($new_sources[0]['style_name'], $new_sources[0]['path']),
+          '#dimensions' => picture_get_image_dimensions($new_sources[0]),
+          '#media' => $breakpoint->mediaQuery,
         );
       }
       else {
-        // Mutliple images, use srcset.
+        // Multiple images, use srcset.
         $srcset = array();
         foreach ($new_sources as $new_source) {
-          $srcset[] = image_style_url($new_source['style_name'], $new_source['uri']) . ' ' . $new_source['#multiplier'];
+          $srcset[] = image_style_url($new_source['style_name'], $new_source['path']) . ' ' . $new_source['#multiplier'];
         }
-        $sources[] = array(
-          'srcset' => implode(', ', $srcset),
-          'dimensions' => picture_get_image_dimensions($new_sources[0]),
-          'media' => $breakpoint->mediaQuery,
+        $variables['sources'][] = array(
+          '#theme' => 'picture_source',
+          '#srcset' => implode(', ', $srcset),
+          '#dimensions' => picture_get_image_dimensions($new_sources[0]),
+          '#media' => $breakpoint->mediaQuery,
         );
       }
     }
   }
 
-  if (!empty($sources)) {
-    $attributes = array();
-    foreach (array('alt', 'title') as $key) {
-      if (isset($variables[$key])) {
-        $attributes[$key] = $variables[$key];
-      }
+  // Prepare picture tag attributes.
+  $attributes = array();
+  foreach (array('alt', 'title') as $key) {
+    if (isset($variables[$key])) {
+      $attributes[$key] = $variables[$key];
     }
-    $output[] = '<picture' . new Attribute($attributes) . '>';
-
-    // Add source tags to the output.
-    foreach ($sources as $source) {
-      $output[] = theme('picture_source', $source);
-    }
-
-    // Output the fallback image.
-    $output[] = '<noscript>' . theme('image_style', $variables) . '</noscript>';
-    $output[] = '</picture>';
-    return implode("\n", $output);
   }
+  $variables['attributes'] = new Attribute($attributes);
+
+  // Prepare noscript fallback image.
+  $variables['fallback'] = array(
+    '#theme' => 'image_style',
+    '#uri' => $variables['path'],
+    '#width' => $variables['width'],
+    '#height' => $variables['height'],
+    '#style_name' => $variables['style_name'],
+    '#alt' => isset($variables['alt']) ? $variables['alt'] : NULL,
+    '#title' => isset($variables['title']) ? $variables['title'] : NULL,
+  );
 }
 
 /**
- * Returns HTML for a source tag.
+ * Prepares variables for source tag templates.
+ *
+ * Default template: picture-source.html.twig.
  *
  * @param type $variables
  *   An associative array containing:
@@ -326,27 +345,24 @@ function theme_picture($variables) {
  *     URL and optionally multipliers.
  *   - src: Either the path of the image file (relative to base_path()) or a
  *     full URL.
- *   - dimensions: The width and height of the image (if known).
- *
- * @ingroup themeable
+ *   - dimensions: An array containing the width and height of the image (if
+ *     known).
  */
-function theme_picture_source($variables) {
-  $output = array();
-  if (isset($variables['media']) && !empty($variables['media'])) {
-    if (!isset($variables['srcset'])) {
-      $output[] = '<!-- <source media="' . $variables['media'] . '" src="' . $variables['src'] . '" ' . new Attribute($variables['dimensions']) . ' /> -->';
-      $output[] = '<source media="' . $variables['media'] . '" src="' . $variables['src'] . '" ' . new Attribute($variables['dimensions']) . '/>';
-    }
-    elseif (!isset($variables['src'])) {
-      $output[] = '<!-- <source media="' . $variables['media'] . '" srcset="' . $variables['srcset'] . '" ' . new Attribute($variables['dimensions']) . ' /> -->';
-      $output[] = '<source media="' . $variables['media'] . '" srcset="' . $variables['srcset'] . '" ' . new Attribute($variables['dimensions']) . ' />';
+function template_preprocess_picture_source(&$variables) {
+  $attributes = array();
+  foreach (array('media', 'src', 'srcset') as $attribute) {
+    if (!empty($variables[$attribute])) {
+      $attributes[$attribute] = $variables[$attribute];
+      unset($variables[$attribute]);
     }
   }
-  else {
-    $output[] = '<!-- <source src="' . $variables['src'] . '" ' . new Attribute($variables['dimensions']) . ' /> -->';
-    $output[] = '<source src="' . $variables['src'] . '" ' . new Attribute($variables['dimensions']) . '/>';
-  }
-  return implode("\n", $output);
+  $attributes += $variables['dimensions'];
+  unset($variables['dimensions']);
+
+  $variables['attributes'] = new Attribute($attributes);
+  // Create a duplicate attributes variable to allow printing the attributes
+  // twice.
+  $variables['attributes_copy'] = new Attribute($attributes);
 }
 
 /**

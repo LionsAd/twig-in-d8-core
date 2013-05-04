@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a picture tag.
+ *
+ * Available variables:
+ * - sources: Source elements.
+ * - attributes: HTML attributes for the picture tag.
+ * - fallback: Fallback image tag for non-JS browsers.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_picture()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if sources %}
+  <picture{{ attributes }}>
+    {% for source in sources %}
+      {{ source }}
+    {% endfor %}
+    <noscript>{{ fallback }}</noscript>
+  </picture>
+{% endif %}

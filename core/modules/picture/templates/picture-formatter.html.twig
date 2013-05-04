@@ -1,0 +1,23 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a picture field formatter.
+ *
+ * Available variables:
+ * - image: Picture element, if picture has breakpoint sources, otherwise img
+ *   element.
+ * - path: (optional) Contains information about the link.
+ *   - path: The URL the image links to.
+ *   - attributes: HTML attributes for the link tag.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_picture_formatter()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if path %}
+  <a href="{{ path.path }}"{{ path.attributes }}>{{ image }}</a>
+{% else %}
+  {{ image }}
+{% endif %}
