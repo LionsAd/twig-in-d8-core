@@ -303,7 +303,7 @@ function system_element_info() {
     '#limit_validation_errors' => FALSE,
     '#process' => array('form_process_button', 'ajax_process_form'),
     '#pre_render' => array('form_pre_render_button'),
-    '#theme_wrappers' => array('input__submit'),
+    '#theme' => 'input__submit',
   );
   $types['button'] = array(
     '#input' => TRUE,
@@ -313,7 +313,7 @@ function system_element_info() {
     '#limit_validation_errors' => FALSE,
     '#process' => array('form_process_button', 'ajax_process_form'),
     '#pre_render' => array('form_pre_render_button'),
-    '#theme_wrappers' => array('input__button'),
+    '#theme' => 'input__button',
   );
   $types['image_button'] = array(
     '#input' => TRUE,
@@ -325,7 +325,7 @@ function system_element_info() {
     '#has_garbage_value' => TRUE,
     '#src' => NULL,
     '#pre_render' => array('form_pre_render_image_button'),
-    '#theme_wrappers' => array('input__image_button'),
+    '#theme' => 'input__image_button',
   );
   $types['textfield'] = array(
     '#input' => TRUE,
@@ -494,7 +494,8 @@ function system_element_info() {
   );
   $types['date'] = array(
     '#input' => TRUE,
-    '#theme' => 'date',
+    '#theme' => 'input__date',
+    '#pre_render' => array('form_pre_render_date'),
     '#theme_wrappers' => array('form_element'),
   );
   $types['file'] = array(
@@ -510,10 +511,11 @@ function system_element_info() {
     '#input' => TRUE,
     '#js_select' => TRUE,
     '#multiple' => TRUE,
+    '#pre_render' => array('form_pre_render_tableselect'),
     '#process' => array('form_process_tableselect'),
     '#options' => array(),
     '#empty' => '',
-    '#theme' => 'tableselect',
+    '#theme' => 'table__tableselect',
   );
 
   // Form structure.
@@ -3965,35 +3967,6 @@ function theme_confirm_form($variables) {
  */
 function theme_system_settings_form($variables) {
   return drupal_render_children($variables['form']);
-}
-
-/**
- * Returns HTML for an exposed filter form.
- *
- * @param $variables
- *   An associative array containing:
- *   - form: An associative array containing the structure of the form.
- *
- * @return
- *   A string containing an HTML-formatted form.
- *
- * @ingroup themeable
- */
-function theme_exposed_filters($variables) {
-  $form = $variables['form'];
-  $output = '';
-
-  if (isset($form['current'])) {
-    $items = array();
-    foreach (element_children($form['current']) as $key) {
-      $items[] = $form['current'][$key];
-    }
-    $output .= theme('item_list', array('items' => $items, 'attributes' => array('class' => array('clearfix', 'current-filters'))));
-  }
-
-  $output .= drupal_render_children($form);
-
-  return '<div class="exposed-filters">' . $output . '</div>';
 }
 
 /**
