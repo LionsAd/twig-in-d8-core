@@ -1,0 +1,22 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a log message in an authorize.php report.
+ *
+ * This template displays a single message in an authorize.php batch operation
+ * report.
+ *
+ * Available variables:
+ * - message: The log message.
+ * - success: A flag indicating failure or success.
+ *
+ * @see template_preprocess()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if success %}
+  <span class="success">{{ message }}</span>
+{% else %}
+  <span class="failure"><strong>{{ message }}</strong></span>
+{% endif %}
