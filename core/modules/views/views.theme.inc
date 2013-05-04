@@ -175,11 +175,26 @@ function template_preprocess_views_view(&$vars) {
 }
 
 /**
- * Preprocess theme function to print a single record from a row, with fields
+ * Prepares variables for Views fields templates.
+ *
+ * Default template: views-view-fields.html.twig.
+ *
+ * @param array $vars
+ *   An associative array containing:
+*    - view: The View object.
+*    - options: An array of options. Each option contains:
+*      - inline: An array that contains the fields that are to be
+*        displayed inline.
+*      - default_field_elements: If default field wrapper
+*        elements are to be provided.
+*      - hide_empty: Whether the field is to be hidden if empty.
+*      - element_default_classes: If the default classes are to be added.
+*      - seperator: A string to be placed between inline fields to keep
+*        them from squishing up next to each other.
+*    - row: An array containing information about the current row.
  */
 function template_preprocess_views_view_fields(&$vars) {
   $view = $vars['view'];
-
   // Loop through the fields for this view.
   $previous_inline = FALSE;
   $vars['fields'] = array(); // ensure it's at least an empty array.
