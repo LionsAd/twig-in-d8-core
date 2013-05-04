@@ -1,0 +1,56 @@
+{#
+/**
+ * @file
+ * Seven's theme implementation to display a single Drupal page.
+ *
+ * The doctype, html, head, and body tags are not in this template. Instead
+ * they can be found in the html.html.twig template normally located in the
+ * core/modules/system directory.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_page()
+ * @see seven_preprocess_page()
+ *
+ * @ingroup themeable
+ */
+#}
+  <header id="branding" class="clearfix" role="navigation">
+    {{ breadcrumb }}
+    {{ title_prefix }}
+    {% if title %}
+      <h1 class="page-title">{{ title }}</h1>
+    {% endif %}
+    {{ title_suffix }}
+    {% if primary_local_tasks %}
+      <div role="tab">{{ primary_local_tasks }}</div>
+    {% endif %}
+  </header>
+
+  <div id="page">
+    {% if secondary_local_tasks %}
+      <div class="tabs-secondary clearfix" role="navigation">{{ secondary_local_tasks }}</div>
+    {% endif %}
+
+    <main id="content" class="clearfix" role="main">
+      <div class="element-invisible"><a id="main-content"></a></div>
+      {% if messages %}
+        <div id="console" class="clearfix">{{ messages }}</div>
+      {% endif %}
+      {% if page.help %}
+        <div id="help">
+          {{ page.help }}
+        </div>
+      {% endif %}
+      {% if action_links %}
+        <ul class="action-links">
+          {{ action_links }}
+        </ul>
+      {% endif %}
+      {{ page.content }}
+    </main>
+
+    <footer id="footer" role="contentinfo">
+      {{ feed_icons }}
+    </footer>
+
+  </div>
