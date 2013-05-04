@@ -282,24 +282,14 @@ function aggregator_categorize_items_submit($form, &$form_state) {
 }
 
 /**
- * Default theme implementation to present a linked feed item for summaries.
+ * Processes variables for aggregator item templates.
  *
- * @param $variables
+ * Default template: aggregator-item.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
- *   - item_link: Link to item.
- *   - item_age: Age of the item.
- *
- * @see template_preprocess()
- * @see template_preprocess_aggregator_summary_item()
- */
-function theme_aggregator_summary_item($variables) {
-  return $variables['item_url'] . ' ' . $variables['item_age'];
-}
-
-/**
- * Processes variables for aggregator-item.tpl.php.
- *
- * @see aggregator-item.tpl.php
+ *   - aggregator_item: An individual feed item for display on the aggregator
+ *     page.
  */
 function template_preprocess_aggregator_item(&$variables) {
   $item = $variables['aggregator_item'];
@@ -425,55 +415,77 @@ function aggregator_page_rss() {
   }
 
   $feeds = $result->fetchAll();
-  return theme('aggregator_page_rss', array('feeds' => $feeds, 'category' => $category));
+  return array(
+    '#theme' => 'aggregator_page_rss',
+    '#feeds' => $feeds,
+    '#category' => $category,
+  );
 }
 
 /**
- * Prints the RSS page for a feed.
+ * Prepares variables for a RSS feed page template.
  *
- * @param $variables
+ * Default template: aggregator-page-rss.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - feeds: An array of the feeds to theme.
  *   - category: A common category, if any, for all the feeds.
- *
- * @return void
- *
- * @ingroup themeable
  */
-function theme_aggregator_page_rss($variables) {
+function template_preprocess_aggregator_page_rss(&$variables) {
   $feeds = $variables['feeds'];
   $category = $variables['category'];
 
   drupal_add_http_header('Content-Type', 'application/rss+xml; charset=utf-8');
 
-  $items = '';
+  $items = array();
   $feed_length = config('system.rss')->get('items.view_mode');
   foreach ($feeds as $feed) {
-    switch ($feed_length) {
-      case 'teaser':
-        $summary = text_summary($feed->description, NULL, config('aggregator.settings')->get('items.teaser_length'));
-        if ($summary != $feed->description) {
-          $summary .= '<p><a href="' . check_url($feed->link) . '">' . t('read more') . "</a></p>\n";
-        }
+     switch ($feed_length) {
+       case 'teaser':
+          $summary = text_summary($feed->description, NULL, config('aggregator.settings')->get('items.teaser_length'));
+          if ($summary != $feed->description) {
+            $summary = array(
+              $summary,
+              array(
+                '#prefix' => '<p>',
+                '#suffix' => "</p>\n",
+                '#theme' => 'link',
+                '#path' => check_url($feed->link),
+                '#title' => t('read more'),
+              ),
+            );
+          }
         $feed->description = $summary;
         break;
       case 'title':
         $feed->description = '';
         break;
     }
-    $items .= format_rss_item($feed->ftitle . ': ' . $feed->title, $feed->link, $feed->description, array('pubDate' => date('r', $feed->timestamp)));
+    $items[] = format_rss_item($feed->ftitle . ': ' . $feed->title, $feed->link, $feed->description, array('pubDate' => date('r', $feed->timestamp)));
   }
 
   $site_name = config('system.site')->get('name');
   $url = url((isset($category) ? 'aggregator/categories/' . $category->cid : 'aggregator'), array('absolute' => TRUE));
   $description = isset($category) ? t('@site_name - aggregated feeds in category @title', array('@site_name' => $site_name, '@title' => $category->title)) : t('@site_name - aggregated feeds', array('@site_name' => $site_name));
 
-  $output  = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-  $output .= "<rss version=\"2.0\">\n";
-  $output .= format_rss_channel(t('@site_name aggregator', array('@site_name' => $site_name)), $url, $description, $items);
-  $output .= "</rss>\n";
+  $variables['title'] = t('@site_name aggregator', array('@site_name' => $site_name));
+  $variables['link'] = check_url($url);
+  // The RSS 2.0 "spec" doesn't indicate HTML can be used in the description.
+  // We strip all HTML tags, but need to prevent double encoding from properly
+  // escaped source data (such as &amp becoming &amp;amp;).
+  $variables['description'] = check_plain(decode_entities(strip_tags($description)));
+  $variables['items'] = $items;
 
-  print $output;
+  $langcode = (isset($category['langcode']) ? $category['langcode'] : language(LANGUAGE_TYPE_CONTENT)->langcode);
+  $variables['langcode'] = check_plain($langcode);
+
+  // Pass along any channel args to be rendered after the language code.
+  if (isset($category['args']) && is_array($category['args'])) {
+     $variables['args'] = format_xml_elements($category['args']);
+  } else {
+     $variables['args'] = '';
+  }
 }
 
 /**
@@ -501,39 +513,38 @@ function aggregator_page_opml($cid = NULL) {
 }
 
 /**
- * Prints the OPML page for the feed.
+ * Prepares variables for an OPML feed page template.
+ *
+ * Default template: aggregator-page-opml.html.twig.
  *
  * @param array $variables
  *   An associative array containing:
  *   - feeds: An array of the feeds to theme.
- *
- * @ingroup themeable
  */
-function theme_aggregator_page_opml($variables) {
+function template_preprocess_aggregator_page_opml(&$variables) {
   $feeds = $variables['feeds'];
 
   drupal_add_http_header('Content-Type', 'text/xml; charset=utf-8');
 
-  $output  = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-  $output .= "<opml version=\"1.1\">\n";
-  $output .= "<head>\n";
-  $output .= '<title>' . check_plain(config('system.site')->get('name')) . "</title>\n";
-  $output .= '<dateModified>' . gmdate(DATE_RFC2822, REQUEST_TIME) . "</dateModified>\n";
-  $output .= "</head>\n";
-  $output .= "<body>\n";
-  foreach ($feeds as $feed) {
-    $output .= '<outline text="' . check_plain($feed->title) . '" xmlUrl="' . check_url($feed->url) . "\" />\n";
-  }
-  $output .= "</body>\n";
-  $output .= "</opml>\n";
+  $variables['title'] = check_plain(config('system.site')->get('name'));
+  $variables['date'] = gmdate(DATE_RFC2822, REQUEST_TIME);
+  $variables['feeds'] = array();
 
-  print $output;
+  foreach ($feeds as $key => $feed) {
+    $variables['feeds'][$key]['title'] = check_plain($feed->title);
+    $variables['feeds'][$key]['url'] = check_url($feed->url);
+  }
 }
 
 /**
- * Processes variables for aggregator-summary-items.tpl.php.
+ * Processes variables for aggregator summary templates.
  *
- * @see aggregator-summary-items.tpl.php
+ * Default template: aggregator-summary-items.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - source: Information about the feed source.
+ *   - summary_items: An array of feed items.
  */
 function template_preprocess_aggregator_summary_items(&$variables) {
   $variables['title'] = check_plain($variables['source'] instanceof EntityInterface ? $variables['source']->label() : $variables['source']->title);
@@ -549,19 +560,23 @@ function template_preprocess_aggregator_summary_items(&$variables) {
 }
 
 /**
- * Processes variables for aggregator-summary-item.tpl.php.
+ * Prepares variables for aggregator summary item templates.
  *
- * @see aggregator-summary-item.tpl.php
+ * Default template: aggregator-summary-item.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - aggregator_item: A feed item.
  */
 function template_preprocess_aggregator_summary_item(&$variables) {
   $item = $variables['aggregator_item'];
 
-  $variables['item_url'] = l(check_plain($item->label()), check_url(url($item->link->value, array('absolute' => TRUE))), array(
+  $variables['url'] = l(check_plain($item->label()), check_url(url($item->link->value, array('absolute' => TRUE))), array(
     'attributes' => array(
       'class' => array('feed-item-url',),
     ),
   ));
-  $variables['item_age'] = theme('datetime', array(
+  $variables['age'] = theme('datetime', array(
     'attributes' => array(
       'datetime' => format_date($item->timestamp->value, 'html_datetime', '', 'UTC'),
       'class' => array('feed-item-age',),
@@ -572,9 +587,13 @@ function template_preprocess_aggregator_summary_item(&$variables) {
 }
 
 /**
- * Processes variables for aggregator-feed-source.tpl.php.
+ * Processes variables for aggregator feed source templates.
  *
- * @see aggregator-feed-source.tpl.php
+ * Default template: aggregator-feed-source.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - aggregator_feed: Information about the feed source.
  */
 function template_preprocess_aggregator_feed_source(&$variables) {
   $feed = $variables['aggregator_feed'];

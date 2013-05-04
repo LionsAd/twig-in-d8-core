@@ -1,0 +1,31 @@
+{#
+/**
+ * @file
+ * Default theme implementation for an RSS feed page.
+ *
+ * Available variables:
+ * - title: RSS channel title.
+ * - link: RSS channel link.
+ * - description: RSS channel description.
+ * - language: RSS channel language code.
+ * - items: RSS feed items.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_aggregator_page_rss()
+ *
+ * @ingroup themeable
+ */
+#}
+<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<rss version=\"2.0\">
+  <channel>
+    <title>{{ title }}</title>
+    <link>{{ link }}</link>
+    <description>{{ description }}</description>
+    <language>{{ langcode }}</language>
+    {{ args }}
+    {% for item in items %}
+      {{ item }}
+    {% endfor %}
+  </channel>
+</rss>
