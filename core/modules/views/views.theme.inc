@@ -1046,16 +1046,26 @@ function template_preprocess_views_exposed_form(&$variables) {
   $variables['button'] = $form['submit'];
 }
 
-function theme_views_mini_pager($vars) {
+/**
+ * Prepares variables for Views mini-pager templates.
+ *
+ * Default template: views-mini-pager.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - tags: @todo.
+ *   - element: @todo.
+ *   - parameters: @todo.
+ */
+function template_preprocess_views_mini_pager(&$variables) {
   global $pager_page_array, $pager_total;
 
-  $tags = $vars['tags'];
-  $element = $vars['element'];
-  $parameters = $vars['parameters'];
+  $tags = $variables['tags'];
+  $element = $variables['element'];
+  $parameters = $variables['parameters'];
 
   // Current is the page we are currently paged to.
   $pager_current = $pager_page_array[$element] + 1;
-  // End of marker calculations.
 
   $li_previous = array();
   if ($pager_total[$element] > 1 && $pager_page_array[$element] > 0) {
@@ -1083,6 +1093,7 @@ function theme_views_mini_pager($vars) {
     );
   }
 
+  $items = array();
   $items[] = array(
     '#wrapper_attributes' => array('class' => array('pager-previous')),
   ) + $li_previous;
@@ -1096,13 +1107,13 @@ function theme_views_mini_pager($vars) {
     '#wrapper_attributes' => array('class' => array('pager-next')),
   ) + $li_next;
 
-  return theme('item_list',
-    array(
-      'items' => $items,
-      'title' => NULL,
-      'type' => 'ul',
-      'attributes' => array('class' => array('pager')),
-    )
+  $variables['items'] = $items;
+  $variables['pager'] = array(
+    '#theme' => 'item_list',
+    '#items' => $items,
+    '#title' => NULL,
+    '#type' => 'ul',
+    '#attributes' => array('class' => array('pager')),
   );
 }
 
