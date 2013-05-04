@@ -2417,19 +2417,29 @@ function theme_more_help_link($variables) {
 }
 
 /**
- * Returns HTML for a feed icon.
+ * Prepares variables for feed icon templates.
  *
- * @param $variables
+ * Default template: feed-icon.html.twig.
+ *
+ * @param array $variables
  *   An associative array containing:
  *   - url: An internal system path or a fully qualified external URL of the
  *     feed.
  *   - title: A descriptive title of the feed.
  */
-function theme_feed_icon($variables) {
+function template_preprocess_feed_icon(&$variables) {
   $text = t('Subscribe to !feed-title', array('!feed-title' => $variables['title']));
-  if ($image = theme('image', array('uri' => 'core/misc/feed.png', 'width' => 16, 'height' => 16, 'alt' => $text))) {
-    return l($image, $variables['url'], array('html' => TRUE, 'attributes' => array('class' => array('feed-icon'), 'title' => $text)));
-  }
+  $variables['icon'] = array(
+    '#theme' => 'image__feed_icon',
+    '#uri' => 'core/misc/feed.png',
+    '#width' => 16,
+    '#height' => 16,
+    '#alt' => $text,
+  );
+  $variables['attributes'] = new Attribute(array());
+  $variables['attributes']['class'] = array('feed-icon');
+  // Stripping tags because that's what l() used to do.
+  $variables['attributes']['title'] = strip_tags($text);
 }
 
 /**
@@ -3203,6 +3213,7 @@ function drupal_common_theme() {
     ),
     'feed_icon' => array(
       'variables' => array('url' => NULL, 'title' => NULL),
+      'template' => 'feed-icon',
     ),
     'more_link' => array(
       'variables' => array('url' => NULL, 'title' => NULL)
