@@ -143,6 +143,9 @@ class FunctionsTest extends WebTestBase {
     // because the current path is different when running tests manually via
     // simpletest.module ('batch') and via the testing framework ('').
     _current_path(config('system.site')->get('page.front'));
+    // Release the static variable because it's not getting released before
+    // the tests run.
+    drupal_static_reset('drupal_is_front_page');
 
     // Verify that a list of links is properly rendered.
     $variables = array();
