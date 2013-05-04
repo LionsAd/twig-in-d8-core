@@ -3,6 +3,7 @@ description: 'A simple one-column, tableless, fluid width administration theme.'
 package: Core
 version: VERSION
 core: 8.x
+engine: twig
 stylesheets:
   screen:
     - style.css
