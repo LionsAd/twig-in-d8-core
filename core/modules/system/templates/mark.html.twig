@@ -1,0 +1,26 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a marker for new or updated content.
+ *
+ * Available variables:
+ * - type: Number representing the marker type to display. Use the constants
+ *   below for comparison:
+ *   - MARK_NEW
+ *   - MARK_UPDATED
+ *   - MARK_READ
+ * - logged_in: A flag indicating whether the user is logged in or not.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_mark()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if logged_in %}
+  {% if type is constant('MARK_NEW') %}
+    <span class="marker">{{ 'new'|t }}</span>
+  {% elseif type is constant('MARK_UPDATED') %}
+    <span class="marker">{{ 'updated'|t }}</span>
+  {% endif %}
+{% endif %}
