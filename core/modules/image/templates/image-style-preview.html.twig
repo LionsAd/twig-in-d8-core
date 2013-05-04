@@ -1,0 +1,54 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a preview of an image style.
+ *
+ * Available variables:
+ * - style_name: The name of the image style.
+ * - original_image_height: The height in pixels of the original image.
+ * - original_image_width: The width in pixels of the original image.
+ * - original_height: The lesser of original_image_height or sample image
+ *   height.
+ * - original_width: The lesser of original_image_width or sample image width.
+ * - original_url: The URL of the original image.
+ * - original_attributes: HTML attributes for the original style.
+ * - original_image: The rendered original image.
+ * - preview_image_height: The height in pixels of the preview image.
+ * - preview_image_width: The width in pixels of the preview image.
+ * - preview_height: The lesser of preview_image_height or sample image height.
+ * - preview_width: The lesser of preview_image_width or sample image width.
+ * - preview_url: The URL of the preview image.
+ * - preview_attributes: HTML attributes for the preview style.
+ * - preview_image: The rendered preview image.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_image_style_preview()
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="image-style-preview preview clearfix">
+  {# Preview of the original image. #}
+  <div class="preview-image-wrapper">
+      {{ 'original' | t }} (<a href="{{ original_url }}">{{ 'view actual size'|t }}</a>)
+      <div class="preview-image original-image" style="{{ original_attributes.style }}">
+        <a href="{{ original_url }}">
+          {{ original_image }}
+        </a>
+      <div class="height" style="height: {{ original_height }}px"><span>{{ original_image_height }}px</span></div>
+      <div class="width" style="width: {{ original_width }}px"><span>{{ original_image_width }}px</span></div>
+    </div>
+  </div>{# End preview-image-wrapper. #}
+
+  {# Preview of the image style. #}
+  <div class="preview-image-wrapper">
+    {{ style_name }} (<a href="{{ preview_url }}">{{ 'view actual size'|t }}</a>)
+    <div class="preview-image modified-image" style="{{ preview_attributes.style }}">
+      <a href="{{ preview_url }}">
+        {{ preview_image }}
+      </a>
+      <div class="height" style="height: {{ preview_height }}px"><span>{{ preview_image_height }}px</span></div>
+      <div class="width" style="width: {{ preview_width }}px"><span>{{ preview_image_width }}px</span></div>
+    </div>
+  </div>{# End preview-image-wrapper. #}
+</div>
