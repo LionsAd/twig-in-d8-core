@@ -33,7 +33,7 @@ Drupal.behaviors.filterStatus = {
           }
         }
         // Restripe table after toggling visibility of table row.
-        Drupal.tableDrag['filter-order'].restripeTable();
+        Drupal.tableDrag['edit-filters-order'].restripeTable();
       });
 
       // Attach summary for configurable filters (only for screen-readers).
