@@ -431,9 +431,11 @@ function rdf_theme() {
   return array(
     'rdf_template_variable_wrapper' => array(
       'variables' => array('content' => NULL, 'attributes' => array(), 'context' => array(), 'inline' => TRUE),
+      'template' => 'rdf-template-variable-wrapper',
     ),
     'rdf_metadata' => array(
       'variables' => array('metadata' => array()),
+      'template' => 'rdf-metadata',
     ),
   );
 }
@@ -816,27 +818,20 @@ function rdf_preprocess_image(&$variables) {
 }
 
 /**
- * Returns HTML for a template variable wrapped in an HTML element with the
- * RDF attributes.
+ * Prepares variables for RDF variable wrapper templates.
+ *
+ * Default template: rdf-template-variable-wrapper.html.twig.
  *
  * This is called by rdf_process() shortly before the theme system renders
  * a template file. It is called once for each template variable for which
  * additional attributes are needed. While template files are responsible for
  * rendering the attributes for the template's primary object (via the
- * $attributes variable), title (via the $title_attributes variable), and
- * content (via the $content_attributes variable), additional template
+ * 'attributes' variable), title (via the 'title_attributes' variable), and
+ * content (via the 'content_attributes' variable), additional template
  * variables that need containing attributes are routed through this function,
  * allowing the template file to receive properly wrapped variables.
  *
- * Tip for themers: if you're already outputting a wrapper element around a
- * particular template variable in your template file, and if you don't want
- * an extra wrapper element, you can override this function to not wrap that
- * variable and instead print the following inside your template file:
- * @code
- *   new Drupal\Core\Template\Attribute($rdf_template_variable_attributes[$variable_name])
- * @endcode
- *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - content: A string of content to be wrapped with attributes.
  *   - attributes: An array of attributes to be placed on the wrapping element.
@@ -863,42 +858,32 @@ function rdf_preprocess_image(&$variables) {
  *     content with block level HTML must similarly implement
  *     hook_preprocess_HOOK() for theme_rdf_template_variable_wrapper() and set
  *     'inline' accordingly.
- *
- * @see rdf_process()
- * @ingroup themeable
- * @ingroup rdf
  */
-function theme_rdf_template_variable_wrapper($variables) {
-  $output = $variables['content'];
-  if (!empty($output) && !empty($variables['attributes'])) {
-    $attributes = new Attribute($variables['attributes']);
-    $output = $variables['inline'] ? "<span$attributes>$output</span>" : "<div$attributes>$output</div>";
+function template_preprocess_rdf_template_variable_wrapper(&$variables) {
+  if (!empty($variables['content']) && !empty($variables['attributes'])) {
+    $variables['attributes'] = new Attribute($variables['attributes']);
   }
-  return $output;
 }
 
 /**
- * Returns HTML for a series of empty spans for exporting RDF metadata in RDFa.
+ * Prepares variables for RDF metadata templates.
+ *
+ * Default template: rdf-metadata.html.twig.
  *
  * Sometimes it is useful to export data which is not semantically present in
  * the HTML output. For example, a hierarchy of comments is visible for a human
- * but not for machines because this hiearchy is not present in the DOM tree.
+ * but not for machines because this hierarchy is not present in the DOM tree.
  * We can express it in RDFa via empty <span> tags. These aren't visible and
  * give machines extra information about the content and its structure.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - metadata: An array of attribute arrays. Each item in the array
  *     corresponds to its own set of attributes, and therefore, needs its own
  *     element.
- *
- * @see rdf_process()
- * @ingroup themeable
- * @ingroup rdf
  */
-function theme_rdf_metadata($variables) {
-  $output = '';
-  foreach ($variables['metadata'] as $attributes) {
+function template_preprocess_rdf_metadata(&$variables) {
+  foreach ($variables['metadata'] as $key => $attributes) {
     // Add a class so that developers viewing the HTML source can see why there
     // are empty <span> tags in the document. The class can also be used to set
     // a CSS display:none rule in a theme where empty spans affect display.
@@ -907,7 +892,6 @@ function theme_rdf_metadata($variables) {
     // be used, but for maximum browser compatibility, W3C recommends the
     // former when serving pages using the text/html media type, see
     // http://www.w3.org/TR/xhtml1/#C_3.
-    $output .= '<span' . new Attribute($attributes) . '></span>';
+    $variables['metadata'][$key] = new Attribute($attributes);
   }
-  return $output;
 }
