@@ -1604,47 +1604,7 @@ function template_preprocess_datetime(&$variables) {
 }
 
 /**
-<<<<<<< HEAD
- * Returns HTML for a date / time.
- *
- * @param $variables
- *   An associative array containing:
- *   - timestamp: (optional) A UNIX timestamp for the datetime attribute. If
- *     the datetime cannot be represented as a UNIX timestamp, use a valid
- *     datetime attribute value in $variables['attributes']['datetime'].
- *   - text: (optional) The content to display within the <time> element. Set
- *     'html' to TRUE if this value is already sanitized for output in HTML.
- *     Defaults to a human-readable representation of the timestamp value or
- *     the datetime attribute value using format_date().
- *     When invoked as #theme or #theme_wrappers of a render element, the
- *     rendered #children are autoamtically taken over as 'text', unless #text
- *     is explicitly set.
- *   - attributes: (optional) An associative array of HTML attributes to apply
- *     to the <time> element. A datetime attribute in 'attributes' overrides
- *     the 'timestamp'. To create a valid datetime attribute value from a UNIX
- *     timestamp, use format_date() with one of the predefined 'html_*'
- *     formats.
- *   - html: (optional) Whether 'text' is HTML markup (TRUE) or plain-text
- *     (FALSE). Defaults to FALSE. For example, to use a SPAN tag within the
- *     TIME element, this must be set to TRUE, or the SPAN tag will be escaped.
- *     It is the responsibility of the caller to properly sanitize the value
- *     contained in 'text' (or within the SPAN tag in aforementioned example).
- *
- * @see template_preprocess_datetime()
- * @see http://www.w3.org/TR/html5-author/the-time-element.html#attr-time-datetime
- */
-function theme_datetime($variables) {
-  $output = '<time' . new Attribute($variables['attributes']) . '>';
-  $output .= !empty($variables['html']) ? $variables['text'] : check_plain($variables['text']);
-  $output .= '</time>';
-  return $output;
-}
-
-/**
  * Prepares variables for status message templates.
-=======
- * Returns HTML for status and/or error messages, grouped by type.
->>>>>>> Issue Convert theme_datetime() to Twig [#1939080].
  *
  * Default template: status-messages.html.twig.
  *
@@ -1877,25 +1837,7 @@ function template_preprocess_links(&$variables) {
 }
 
 /**
-<<<<<<< HEAD
- * Returns HTML for wrapping a dropbutton menu.
- *
- * @param array $variables
- *   An associative array containing:
- *   - element: An associative array containing the properties and children of
- *     the dropbutton menu. Properties used: #children.
- */
-function theme_dropbutton_wrapper($variables) {
-  if (!empty($variables['element']['#children'])) {
-    return '<div class="dropbutton-wrapper"><div class="dropbutton-widget">' . $variables['element']['#children'] . '</div></div>';
-  }
-}
-
-/**
  * Prepares variables for image templates.
-=======
- * Returns HTML for an image.
->>>>>>> Issue Convert theme_dropbutton_wrapper() to Twig [#1939086].
  *
  * Default template: image.html.twig.
  *
@@ -2603,31 +2545,7 @@ function template_preprocess_more_link(&$variables) {
 }
 
 /**
-<<<<<<< HEAD
- * Returns HTML for a progress bar.
- *
- * Note that the core Batch API uses this only for non-JavaScript batch jobs.
- *
- * @param $variables
- *   An associative array containing:
- *   - percent: The percentage of the progress.
- *   - message: A string containing information to be displayed.
- */
-function theme_progress_bar($variables) {
-  $output = '<div id="progress" class="progress">';
-  $output .= '<div class="bar"><div class="filled" style="width: ' . $variables['percent'] . '%"></div></div>';
-  $output .= '<div class="percentage">' . $variables['percent'] . '%</div>';
-  $output .= '<div class="message">' . $variables['message'] . '</div>';
-  $output .= '</div>';
-
-  return $output;
-}
-
-/**
  * Prepares variables for meter templates.
-=======
- * Returns HTML for a meter.
->>>>>>> Issue Convert theme_progress_bar() to Twig [#1939100].
  *
  * Default template: meter.html.twig.
  *
