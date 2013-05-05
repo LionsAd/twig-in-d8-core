@@ -140,10 +140,3 @@ function bartik_preprocess_node(&$variables) {
   // Render links to test if there is content present to display.
   $variables['links'] = drupal_render($links);
 }
-
-/**
- * Implements theme_menu_tree().
- */
-function bartik_menu_tree($variables) {
-  return '<ul class="menu clearfix">' . $variables['tree'] . '</ul>';
-}
