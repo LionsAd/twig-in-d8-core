@@ -1,6 +1,8 @@
+These modules should be our top 9
+
 node module: #1898432: Convert node module to Twig
 comment module: #1898054: Convert comment module to Twig
-field module: #1898062: Convert field module to Twig
+field module: #1898062: Convert field module to Twig Assigned to: steveoliver
 custom_block module: #1898038: Convert custom_block module to Twig
 block module: #1898034: Convert block module to Twig
 (some of) theme.inc - see theme.inc section below for a list of other sub-issues
@@ -12,51 +14,49 @@ block module: #1898034: Convert block module to Twig
 #1961876: Convert theme_link() to Twig
 #1961872: Convert html.tpl.php to Twig
 #1961870: Convert page.tpl.php to Twig
-#1961868: Convert region.tpl.php to Twig
-menu module: #1898430: Convert menu module to Twig
+#1961868: Convert region.tpl.php to Twig Assigned to: 2ndmile
+menu module: #1898430: Convert menu module to Twig Assigned to: Cottser
 taxonomy module: #1898460: Convert taxonomy module to Twig
 user module: #1898468: Convert user module to Twig
-Twig engine issues
 
-#1922304: Remove TwigReference objects in favor of a high speed implementation by using NodeVisitors more cleverly
 And the rest of our conversions (in alphabetical order)
 
 aggregator module: #1896060: Convert aggregator module to Twig
 book module: #1898050: Convert book module to Twig
-ckeditor module: #1963474: Convert ckeditor module to Twig
-color module: #1898052: Convert color module to Twig
-common_test module: #1898456: Convert common_test module to Twig
-datetime module: #1963476: Convert datetime module to Twig
+ckeditor module: #1963474: Convert ckeditor module to Twig Assigned to: widukind
+color module: #1898052: Convert color module to Twig Assigned to: taslett
+common_test module: #1898456: Convert common_test module to Twig Assigned to: joelpittet
+datetime module: #1963476: Convert datetime module to Twig Assigned to: widukind
 dblog module: #1898060: Remove all (useless) theme functions from dblog module, so we don't have to convert to Twig
 field_ui module: #1898068: Convert field_ui module to Twig
 file module: #1898070: Convert file module to Twig
 filter module: #1898416: Convert filter module to Twig
 forum module: #1898418: Convert forum module to Twig
-image module: #1898420: Convert image module to Twig
-language module: #1898422: Convert language module to Twig
-layout module: #1898424: Convert layout module to Twig
+image module: #1898420: Convert image module to Twig Assigned to: steveoliver
+language module: #1898422: Convert language module to Twig Assigned to: joelpittet
+layout module: #1898424: Convert layout module to Twig Assigned to: joelpittet
 link module: #1898426: Convert link module to Twig
 locale module: #1898428: Convert locale module to Twig
-options module: #1898434: Remove all theme functions from options module, so we don't have to convert to Twig
+options module: #1898434: Remove theme_options_none, use an alter hook instead for changing empty option label
 overlay module: #1898436: Convert overlay module to Twig
 picture module: #1898442: Convert picture module to Twig
 rdf module: #1898444: Convert rdf module to Twig
 search module: #1898448: Convert search module to Twig
-shortcut module: #1898450: Convert shortcut module to Twig
-simpletest module: #1898452: Convert simpletest module to Twig
+shortcut module: #1898450: Convert shortcut module to Twig Assigned to: joelpittet
+simpletest module: #1898452: Convert simpletest module to Twig Assigned to: gnuget
 system module: #1898454: Convert system module to Twig
-theme_test module: #1898458: Convert theme_test module to Twig
+theme_test module: #1898458: Convert theme_test module to Twig Assigned to: widukind
 toolbar module: #1898464: Convert toolbar module to Twig
-update module: #1898466: Convert update module to Twig
+update module: #1898466: Convert update module to Twig Assigned to: joelpittet
 [meta] views module : #1843738: [meta] Convert views module to Twig
 Template file conversions
 #1843740: Convert views/templates/views-exposed-form.tpl.php to twig
-#1843742: Convert views/templates/views-more.tpl.php to twig
-#1843744: Convert views/templates/views-view.tpl.php to twig
-core/modules/views/templates/views-view--frontpage.tpl.php - see #1843744: Convert views/templates/views-view.tpl.php to twig
+#1843742: Convert views/templates/views-more.tpl.php to twig Assigned to: 2ndmile
+#1843744: Convert views/templates/views-view.tpl.php to twig Assigned to: kgoel
+core/modules/views/templates/views-view--frontpage.tpl.php - see #1843744: Convert views/templates/views-view.tpl.php to twig Assigned to: kgoel
 #1843746: Convert views/templates/views-view-field.tpl.php to Twig
 #1843748: Convert views/templates/views-view-fields.tpl.php to twig
-#1843750: Convert views/templates/views-view-grid.tpl.php to twig
+#1843750: Convert views/templates/views-view-grid.tpl.php to twig Assigned to: jastraat
 #1843754: Convert views/templates/views-view-list.tpl.php to twig
 #1843758: Convert views/templates/views-view-row-rss.tpl.php to twig
 #1843760: Convert views/templates/views-view-rss.tpl.php to twig
@@ -64,10 +64,10 @@ core/modules/views/templates/views-view--frontpage.tpl.php - see #1843744: Conve
 #1843764: Convert views/templates/views-view-summary-unformatted.tpl.php to twig
 #1843766: Convert views/templates/views-view-table.tpl.php to twig
 #1843770: Convert views/templates/views-view-unformatted.tpl.php to twig
-#1843752: Convert views/templates/views-view-grouping.tpl.php to twig
+#1843752: Convert views/templates/views-view-grouping.tpl.php to twig Assigned to: joelpittet
 #1843756: Convert views/theme/views-view-row-comment.tpl.php to twig
 Theme function conversions
-#1912606: Convert theme_views_view_grouping function to twig
+#1912606: Convert theme_views_view_grouping function to twig Assigned to: jastraat
 #1912604: Convert theme_views_mini_pager to twig
 #1912600: Convert theme_views_form_views_form to twig
 #1963764: Convert theme_views_view_mapping_test() to Twig
@@ -90,25 +90,25 @@ Theme function conversions
 #1929064: Refactor views_ui_rearrange_form to remove theme function for table render
 #1963984: Convert theme_views_ui_reorder_displays_form() to Twig
 [meta] core themes: #1938864: [meta] Update all core themes to use Twig
-bartik theme: #1938840: Convert Bartik to Twig
+bartik theme: #1938840: Convert Bartik to Twig Assigned to: duellj
 seven theme: #1938848: Convert seven theme to Twig
 stark theme: #1938854: Convert Stark theme to Twig
 form.inc: #1898480: Convert form.inc to Twig
 Follow-up: #1812724: Consolidate all form element templates and add theme_hook_suggestons
-menu.inc: #1898478: Convert menu.inc to Twig
+menu.inc: #1898478: Convert menu.inc to Twig Assigned to: joelpittet
 pager.inc: #1898474: Convert pager.inc to Twig
 theme.maintenance.inc: #1885564: Convert theme.maintenance.inc to Twig
 theme.inc: #1885560: [meta] Convert everything in theme.inc to Twig
 The rest of theme.inc (not already mentioned above):
-#1939080: Convert theme_datetime() to Twig
+#1939080: Convert theme_datetime() to Twig Assigned to: joelpittet
 #1939082: Convert theme_status_messages() to Twig
-#1939086: Convert theme_dropbutton_wrapper() to Twig
+#1939086: Convert theme_dropbutton_wrapper() to Twig Assigned to: chrisjlee
 #1939088: Convert theme_meter() to Twig
 #1939090: Convert theme_tablesort_indicator() to Twig
 #1939092: Convert theme_mark() to Twig
 #1939094: Convert theme_more_help_link() to Twig
-#1939096: Convert theme_feed_icon() to Twig
+#1939096: Convert theme_feed_icon() to Twig Assigned to: joelpittet
 #1939098: Convert theme_more_link() to Twig
-#1939100: Convert theme_progress_bar() to Twig
+#1939100: Convert theme_progress_bar() to Twig Assigned to: chrisjlee
 #1939102: Convert theme_indentation() to Twig
 #1939104: Convert theme_html_tag() to Twig
