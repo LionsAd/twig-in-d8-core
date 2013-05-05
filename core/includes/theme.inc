@@ -1877,6 +1877,7 @@ function template_preprocess_links(&$variables) {
 }
 
 /**
+<<<<<<< HEAD
  * Returns HTML for wrapping a dropbutton menu.
  *
  * @param array $variables
@@ -1892,6 +1893,9 @@ function theme_dropbutton_wrapper($variables) {
 
 /**
  * Prepares variables for image templates.
+=======
+ * Returns HTML for an image.
+>>>>>>> Issue Convert theme_dropbutton_wrapper() to Twig [#1939086].
  *
  * Default template: image.html.twig.
  *
@@ -3256,7 +3260,8 @@ function drupal_common_theme() {
       'template' => 'links',
     ),
     'dropbutton_wrapper' => array(
-      'render element' => 'element',
+      'variables' => array('children' => NULL),
+      'template' => 'dropbutton-wrapper',
     ),
     'image' => array(
       // HTML 4 and XHTML 1.0 always require an alt attribute. The HTML 5 draft
