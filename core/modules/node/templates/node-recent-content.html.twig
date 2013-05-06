@@ -1,0 +1,18 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a node in the recent content block.
+ *
+ * Available variables:
+ * - link: Link to the content.
+ * - mark: HTML marker for new or updated content.
+ * - username: The author of the content.
+ *
+ * @see template_preprocess()
+ * @see template_preprocess_node_recent_content()
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="node-title">{{ link }}{{ mark }}</div>
+<div class="node-author">{{ username }}</div>
